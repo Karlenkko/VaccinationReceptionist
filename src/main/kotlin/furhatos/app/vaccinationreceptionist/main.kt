@@ -10,8 +10,6 @@ class VaccinationreceptionistSkill : Skill() {
     }
 }
 
-// Test
-
 fun main(args: Array<String>) {
     Skill.main(args)
 }
