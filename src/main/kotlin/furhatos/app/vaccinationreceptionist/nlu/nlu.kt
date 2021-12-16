@@ -5,40 +5,10 @@ import furhatos.nlu.Intent
 import furhatos.nlu.TextGenerator
 import java.util.*
 
-// FAQ
-class RequestVaccin: Intent() {
-    override fun getExamples(lang: Language): List<String> {
-        return listOf(
-                "What's the vaccin that you have?",
-                "What is your vaccin?",
-                "Which vaccin do you have?"
-        )
-    }
-}
 
-class RequestSideEffects: Intent() {
-    override fun getExamples(lang: Language): List<String> {
-        return listOf(
-                "What will happen after the vaccination?",
-                "What is the symptom after the vaccination?",
-                "What should I do after the vaccination?"
-        )
-    }
-}
-
-class RequestWaitingTime: Intent() {
-    override fun getExamples(lang: Language): List<String> {
-        return listOf(
-                "How long do I have to wait?",
-                "When will I get the vaccination?",
-                "How long will it take?",
-                "How long should I wait?",
-                "What's the waiting time?"
-        )
-    }
-}
 
 // main form with slots
+// TODO: complete the slot form
 class ReceiveVaccination: Intent(), TextGenerator {
     var name: String? = null
     var birthday: Date? = null
