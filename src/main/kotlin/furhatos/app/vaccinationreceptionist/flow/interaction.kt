@@ -9,16 +9,16 @@ import furhatos.flow.kotlin.*
 val Start: State = state(Interaction) {
 
     onEntry {
-        furhat.ask("Hi there. Do you like robots?")
+        furhat.ask("Hi there. Welcome to the drop-in center for vaccination. I'm a self-service robot to help you go through some procedures of verification to see if you are in a good condition to receive a dose. If you have any questions, you can interrupt and ask me after we start the procedure. So, do you intend to receive a vaccination?")
     }
 
     onResponse<Yes> {
-        furhat.say("I like humans.")
+        furhat.say("We need some of your personal information to give you suggestions about the vaccination. Let's start.")
 //        goto(General)
     }
 
     onResponse<No> {
-        furhat.say("OK, take care of yourself, and be well.")
+        furhat.say("OK, take care of yourself, and be well. Bye.")
         goto(Idle)
     }
 }
