@@ -1,5 +1,6 @@
 package furhatos.app.vaccinationreceptionist.flow
 
+import furhatos.app.vaccinationreceptionist.info
 import furhatos.app.vaccinationreceptionist.nlu.*
 import furhatos.nlu.common.*
 import furhatos.flow.kotlin.*
@@ -132,5 +133,25 @@ val General: State = state(Interaction) {
     onEvent<TellVaccineType> {
         furhat.say(it.resp)
         reentry()
+    }
+}
+
+// All slot-filling states
+//TODO
+
+
+
+// check eligibility
+// control the state transition
+//TODO
+val CheckEligibility = state {
+    onEntry {
+        val info = users.current.info
+        when {
+            //order.deliverTo == null -> goto(RequestDelivery)
+            //order.deliveryTime == null -> goto(RequestTime)
+            //order.topping == null -> goto(RequestTopping)
+            //else -> goto(ConfirmOrder)
+        }
     }
 }
