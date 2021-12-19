@@ -14,23 +14,17 @@ val Start: State = state(Interaction) {
 
     onResponse<Yes> {
         furhat.say("We need some of your personal information to give you suggestions about the vaccination. Let's start.")
-//        goto(General)
+        goto(CheckEligibility)
     }
 
     onResponse<No> {
-        furhat.say("OK, take care of yourself, and be well. Bye.")
+        furhat.say("Take care of yourself, and be well. Bye.")
         goto(Idle)
     }
 }
 
 // parent state for common answers
 val General: State = state(Interaction) {
-//    onEntry {
-//        random(
-//                { furhat.ask("How about some fruits?") },
-//                { furhat.ask("Do you want some fruits?") }
-//        )
-//    }
     onResponse<RequestSideEffects> {
         raise(TellSideEffects())
     }
@@ -145,12 +139,15 @@ val End : State = state(parent = General) {
 }
 
 val RefuseExplain : State = state(parent = General) {
-    //onEntry() {
-    //    when {
-    //      if-else for different reasons
-    //    }
-    //    goto(idle)
-    //}
+    onEntry() {
+        val info = users.current.info
+        when {
+            info.fever == true -> furhat.say("Due to regulations, you need to recover from the fever.")
+            info.recent_vaccination == true -> furhat.say("You need to wait for at least a week after your first dose, or 6 month after the second.")
+        }
+        furhat.say("If you have further questions, please consult your doctor. Take care of yourself, and be well. Bye.")
+        goto(Idle)
+    }
 }
 
 val CallMedicalStaff : State = state(parent = General) {
@@ -166,18 +163,18 @@ val RequestFever : State = state(parent = General) {
     }
 
     // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse<Yes> {
+        furhat.say("I see, currently you have acute illness with fever.")
+        users.current.info.fever = true
+        goto(RefuseExplain)
+    }
 
     // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<No> {
+        furhat.say("Great, you have no acute illness with fever")
+        users.current.info.fever = false
+        goto(CheckEligibility)
+    }
 }
 
 val RequestRecentVaccination : State = state(parent = General) {
@@ -186,18 +183,18 @@ val RequestRecentVaccination : State = state(parent = General) {
     }
 
     // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse<Yes> {
+        furhat.say("You do have received a dose in the last week.")
+        users.current.info.recent_vaccination = true
+        goto(RefuseExplain)
+    }
 
     // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<No> {
+        furhat.say("OK, no vaccination in the last 7 days.")
+        users.current.info.recent_vaccination = false
+        goto(CheckEligibility)
+    }
 }
 
 val RequestAge : State = state(parent = General) {
@@ -538,19 +535,14 @@ val RequestPersonalNum : State = state(parent = General) {
         furhat.ask("What is your personal number?")
     }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse {
+        var personal_num_response = it.text.toLowerCase()
+        personal_num_response = personal_num_response.filter { it.isDigit() }
 
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+        users.current.info.personal_num = personal_num_response
+        furhat.say("OK, your personal number is $personal_num_response")
+        goto(CheckEligibility)
+    }
 }
 
 val RequestName : State = state(parent = General) {
@@ -558,19 +550,22 @@ val RequestName : State = state(parent = General) {
         furhat.ask("What is your full name?")
     }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse {
+        var name_response = it.text
+        name_response = name_response.replace("I'm ", "")
+        name_response = name_response.replace("my name is ", "")
+        name_response = name_response.replace("My name is ", "")
+        name_response = name_response.replace("the name is ", "")
+        name_response = name_response.replace("The name is ", "")
+        name_response = name_response.replace(" is my name", "")
 
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+        name_response = name_response.replace(".", "")
+        name_response = name_response.trim()
+
+        users.current.info.name = name_response
+        furhat.say("OK, the name is $name_response")
+        goto(CheckEligibility)
+    }
 }
 
 val RequestConsent : State = state(parent = General) {
@@ -599,6 +594,11 @@ val CheckEligibility = state {
     onEntry {
         val info = users.current.info
         when {
+            // the sequence here will decide the sequence of the slots
+            info.name == null -> goto(RequestName)
+            info.personal_num == null -> goto(RequestPersonalNum)
+
+            // medical
             info.fever == null -> goto(RequestFever)
             info.recent_vaccination == null -> goto(RequestRecentVaccination)
             info.age.value == -1 -> goto(RequestAge)
@@ -618,8 +618,6 @@ val CheckEligibility = state {
             info.pregnant == true && info.count_pregnancy.value == -1 -> goto(RequestCountPregnancy)
             info.count_pregnancy.value != -1 && info.count_pregnancy.value!! < 4 && info.age.value!! <= 35 && info.known_disease == null -> goto(RequestKnownDisease)
             info.confirm_medical_info == null -> goto(RequestConfirmMedicalInfo)   // should be revised!!!
-            info.personal_num == null -> goto(RequestPersonalNum)
-            info.name == null -> goto(RequestName)
             info.consent == null -> goto(RequestConsent)
             else -> goto(CallMedicalStaff)
         }
