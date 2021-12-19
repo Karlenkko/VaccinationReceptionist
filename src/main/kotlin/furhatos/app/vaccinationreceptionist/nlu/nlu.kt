@@ -1,9 +1,7 @@
 package furhatos.app.vaccinationreceptionist.nlu
 
-import furhatos.nlu.EnumEntity
+import furhatos.nlu.*
 import furhatos.util.Language
-import furhatos.nlu.Intent
-import furhatos.nlu.TextGenerator
 import furhatos.nlu.common.Number
 import java.util.*
 
@@ -15,12 +13,11 @@ class Vaccine : EnumEntity() {
     }
 
     override fun toText(lang: Language): String {
-        return generate(lang, "$value");
+        return generate(lang, "$value")
     }
 }
 
 // main form with slots
-// TODO: complete the slot form
 class ReceiveVaccination: Intent(), TextGenerator {
     var fever: Boolean? = null                     //Do you currently have an acute illness with fever?
     var recent_vaccination: Boolean? = null        //Have your received any other vaccine in the past 7 days?
@@ -38,7 +35,7 @@ class ReceiveVaccination: Intent(), TextGenerator {
     var severe_reaction: Boolean? = null           //Have you ever had a severe reaction to previous vaccinations that needed hospital care?
     var bleeding: Boolean? = null                  //Do you have an increased bleeding tendency due to disease or medicine?
     var pregnant: Boolean? = null                  //Are you pregnant?
-    var count_pregnancy: Number = Number(-1) //In which month of pregnancy?
+    var count_pregnancy: Number = Number(-1) //For how many months have you been pregnant?
     var known_disease: Boolean? = null             //Do you have any known diseases?
     var confirm_medical_info: Boolean? = null      //Are you sure that you have correctly answered all the questions?
     var personal_num: String? = null
@@ -61,5 +58,15 @@ class ReceiveVaccination: Intent(), TextGenerator {
 
     override fun toString(): String {
         return toText()
+    }
+}
+
+// tell the number of months of pregnancy
+class TellCountPregnancy : Intent() {
+    var count_pregnancy: Number = Number(-1)
+
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("I have been pregnant for @count_pregnancy months", "I'm pregnant for @count_pregnancy months", "I'm @count_pregnancy months pregnant",
+                "@count_pregnancy months", "@count_pregnancy")
     }
 }

@@ -464,40 +464,34 @@ val RequestPregnant : State = state(parent = General) {
     onEntry() {
         furhat.ask("Are you pregnant?")
     }
+    
+    onResponse<Yes> {
+        random(
+                { furhat.say("Okay, you are pregnant.") }
+        )
+        users.current.info.pregnant = true
+        goto(CheckEligibility)
+    }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
-
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<No> {
+        random(
+                { furhat.say("Okay, you are not pregnant.") }
+        )
+        users.current.info.pregnant = false
+        goto(CheckEligibility)
+    }
 }
 
 val RequestCountPregnancy : State = state(parent = General) {
     onEntry() {
-        furhat.ask("In which month of pregnancy?")
+        furhat.ask("For how many months have you been pregnant?")
     }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
-
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<TellCountPregnancy> {
+        furhat.say("Okay, ${it.intent.count_pregnancy} months.")
+        users.current.info.count_pregnancy = it.intent.count_pregnancy
+        goto(CheckEligibility)
+    }
 }
 
 val RequestKnownDisease : State = state(parent = General) {
@@ -505,19 +499,18 @@ val RequestKnownDisease : State = state(parent = General) {
         furhat.ask("Do you have any known diseases?")
     }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse<Yes> {
+        users.current.info.known_disease = true
+        goto(CallMedicalStaff)
+    }
 
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<No> {
+        random(
+                { furhat.say("Okay, no known diseases.") }
+        )
+        users.current.info.known_disease = false
+        goto(RefuseExplain)
+    }
 }
 
 val RequestConfirmMedicalInfo : State = state(parent = General) {
@@ -623,7 +616,7 @@ val CheckEligibility = state {
             info.bleeding == null -> goto(RequestBleeding)
             info.pregnant == null -> goto(RequestPregnant)
             info.pregnant == true && info.count_pregnancy.value == -1 -> goto(RequestCountPregnancy)
-            info.count_pregnancy.value != -1 && info.count_pregnancy.value!! < 4 && info.known_disease == null -> goto(RequestKnownDisease)
+            info.count_pregnancy.value != -1 && info.count_pregnancy.value!! < 4 && info.age.value!! <= 35 && info.known_disease == null -> goto(RequestKnownDisease)
             info.confirm_medical_info == null -> goto(RequestConfirmMedicalInfo)   // should be revised!!!
             info.personal_num == null -> goto(RequestPersonalNum)
             info.name == null -> goto(RequestName)
