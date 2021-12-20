@@ -23,6 +23,10 @@ val Start: State = state(Interaction) {
         furhat.say("Take care of yourself, and be well. Bye.")
         goto(Idle)
     }
+
+    onReentry {
+        furhat.ask("Do you intend to receive a vaccination?")
+    }
 }
 
 // parent state for common answers
@@ -185,8 +189,20 @@ val RequestFever : State = state(parent = General) {
         goto(RefuseExplain)
     }
 
+    onResponse<TellHaveProblem> {
+        furhat.say("I see, currently you have acute illness with fever.")
+        users.current.info.fever = true
+        goto(RefuseExplain)
+    }
+
     // go back to CheckEligibility only when eligible
     onResponse<No> {
+        furhat.say("Great, you have no acute illness with fever")
+        users.current.info.fever = false
+        goto(CheckEligibility)
+    }
+
+    onResponse<TellNoProblem> {
         furhat.say("Great, you have no acute illness with fever")
         users.current.info.fever = false
         goto(CheckEligibility)
@@ -407,7 +423,7 @@ val RequestImmunodeficiency : State = state(parent = General) {
 
     onResponse<Yes> {
         random(
-                { furhat.say("You have higher change of being seriously ill due to Covid 19, therefore we advice you to receive extra booster dose after the second dose.") }
+                { furhat.say("You have higher chance of being seriously ill due to Covid 19, therefore we advice you to receive extra booster dose after the second dose.") }
         )
         users.current.info.immunodeficiency = true
         goto(CheckEligibility)
@@ -435,7 +451,23 @@ val RequestAllergy : State = state(parent = General) {
         goto(CallMedicalStaff)
     }
 
+    onResponse<TellHaveProblem> {
+        random(
+                { furhat.say("Okay, you have experienced severe allergic reactions.") }
+        )
+        users.current.info.allergy = true
+        goto(CallMedicalStaff)
+    }
+
     onResponse<No> {
+        random(
+                { furhat.say("Okay, you don't have.") }
+        )
+        users.current.info.allergy = false
+        goto(CheckEligibility)
+    }
+
+    onResponse<TellNoProblem> {
         random(
                 { furhat.say("Okay, you don't have.") }
         )
@@ -457,7 +489,23 @@ val RequestSevereReaction : State = state(parent = General) {
         goto(CallMedicalStaff)
     }
 
+    onResponse<TellHaveProblem> {
+        random(
+                { furhat.say("Okay, you have had a severe reaction to previous vaccinations.") }
+        )
+        users.current.info.severe_reaction = true
+        goto(CallMedicalStaff)
+    }
+
     onResponse<No> {
+        random(
+                { furhat.say("Okay, you haven't had any.") }
+        )
+        users.current.info.severe_reaction = false
+        goto(CheckEligibility)
+    }
+
+    onResponse<TellNoProblem> {
         random(
                 { furhat.say("Okay, you haven't had any.") }
         )
@@ -479,7 +527,23 @@ val RequestBleeding : State = state(parent = General) {
         goto(CheckEligibility)
     }
 
+    onResponse<TellHaveProblem> {
+        random(
+                { furhat.say("You are still qualified to get vaccinated, but please inform our medical staff of your conditions so that they can pay special attention.") }
+        )
+        users.current.info.bleeding = true
+        goto(CheckEligibility)
+    }
+
     onResponse<No> {
+        random(
+                { furhat.say("Okay, no increased bleeding tendency.") }
+        )
+        users.current.info.bleeding = false
+        goto(CheckEligibility)
+    }
+
+    onResponse<TellNoProblem> {
         random(
                 { furhat.say("Okay, no increased bleeding tendency.") }
         )
@@ -555,20 +619,46 @@ val RequestConfirmMedicalInfo : State = state(parent = General) {
     // onResponse<No>
 }
 
-val RequestPersonalNum : State = state(parent = General) {
-    onEntry() {
-        furhat.ask("What is your personal number?")
-    }
-
-    onResponse {
-        var personal_num_response = it.text.toLowerCase()
-        personal_num_response = personal_num_response.filter { it.isDigit() }
-
-        users.current.info.personal_num = personal_num_response
-        furhat.say("OK, your personal number is $personal_num_response")
-        goto(CheckEligibility)
-    }
-}
+//val RequestPersonalNum : State = state(parent = General) {
+//    onEntry() {
+//        furhat.ask("What is your personal number?", timeout = 12000)
+//    }
+//
+////    onResponse<TellPersonalNumber> {
+////        var personal_num_response = it.intent.personal_number
+////        if (personal_num_response != null) {
+////            personal_num_response = personal_num_response.filter { it.isDigit() }
+////            print(personal_num_response)
+////            if (personal_num_response.length != 10) {
+////                reentry()
+////            }
+////        } else {
+////            reentry()
+////        }
+////
+////        users.current.info.personal_num = personal_num_response
+////        furhat.say("OK, your personal number is $personal_num_response")
+////        goto(CheckEligibility)
+////    }
+//
+//    onResponse<TellNoPersonalNumber> {
+//        users.current.info.personal_num = "0000000000"
+//        furhat.say("OK, you can still get vaccinated, even without personal number.")
+//        goto(CheckEligibility)
+//    }
+//
+//    onResponse {
+//        var personal_num_response = it.text.toLowerCase()
+//        personal_num_response = personal_num_response.filter { it.isDigit() }
+////        print(personal_num_response)
+//        if (personal_num_response.length != 10) {
+//            reentry()
+//        }
+//        users.current.info.personal_num = personal_num_response
+//        furhat.say("OK, your personal number is $personal_num_response.")
+//        goto(CheckEligibility)
+//    }
+//}
 
 val RequestName : State = state(parent = General) {
     onEntry() {
@@ -586,12 +676,45 @@ val RequestName : State = state(parent = General) {
 
         name_response = name_response.replace(".", "")
         name_response = name_response.trim()
+        var names = name_response.split(" ")
+        if (names.size < 2) {
+            reentry()
+        }
 
         users.current.info.name = name_response
         furhat.say("OK, the name is $name_response")
         goto(CheckEligibility)
     }
+//    onResponse<TellName> {
+//        users.current.info.name = it.intent.names?.toText()
+//        furhat.say("OK, the name is ${users.current.info.name}")
+//        goto(CheckEligibility)
+//    }
 }
+
+//val RequestFirstName : State = state(parent = General) {
+//    onEntry() {
+//        furhat.ask("What is your first name?")
+//    }
+//
+//    onResponse<PersonName> {
+//        users.current.info.first_name = it.intent
+//        furhat.say("OK, your first name is ${users.current.info.first_name}")
+//        goto(CheckEligibility)
+//    }
+//}
+
+//val RequestLastName : State = state(parent = General) {
+//    onEntry() {
+//        furhat.ask("What is your last name?")
+//    }
+//
+//    onResponse<PersonName> {
+//        users.current.info.last_name = it.intent
+//        furhat.say("OK, your last name is ${users.current.info.last_name}")
+//        goto(CheckEligibility)
+//    }
+//}
 
 val RequestConsent : State = state(parent = General) {
     onEntry() {
@@ -631,7 +754,9 @@ val CheckEligibility = state {
         when {
             // the sequence here will decide the sequence of the slots
             info.name == null -> goto(RequestName)
-            info.personal_num == null -> goto(RequestPersonalNum)
+//            info.first_name == null -> goto(RequestFirstName)
+//            info.last_name == null -> goto(RequestLastName)
+//            info.personal_num == null -> goto(RequestPersonalNum)
 
             // medical
             info.fever == null -> goto(RequestFever)

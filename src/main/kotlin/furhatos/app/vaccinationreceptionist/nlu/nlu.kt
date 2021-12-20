@@ -2,8 +2,10 @@ package furhatos.app.vaccinationreceptionist.nlu
 
 import furhatos.nlu.EnumEntity
 import furhatos.nlu.Intent
+import furhatos.nlu.ListEntity
 import furhatos.nlu.TextGenerator
 import furhatos.nlu.common.Number
+import furhatos.nlu.common.PersonName
 import furhatos.util.Language
 
 // vaccine types
@@ -43,8 +45,10 @@ class ReceiveVaccination: Intent(), TextGenerator {
     var count_pregnancy: Number = Number(-1) //For how many months have you been pregnant?
     var known_disease: Boolean? = null             //Do you have any known diseases?
     var confirm_medical_info: Boolean? = null      //Are you sure that you have correctly answered all the questions?
-    var personal_num: String? = null
-    var name: String? = null
+//    var personal_num: String? = null
+    var name: String?=null
+//    var first_name: PersonName? = null
+//    var last_name: PersonName? = null
     var recommended_type: Vaccine? = null
     var consent: Boolean? = null                   //Would you like to get vaccinated according to our recommendation?
 
@@ -63,6 +67,59 @@ class ReceiveVaccination: Intent(), TextGenerator {
 
     override fun toString(): String {
         return toText()
+    }
+}
+
+class TellNoProblem: Intent() {
+    var disease: String = ""
+
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("I haven't @disease",
+                "I don't have @disease",
+                "I didn't have @disease",
+                "I haven't had @disease")
+    }
+}
+
+// tell disease
+class TellHaveProblem: Intent() {
+    var disease: String = ""
+
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("I have @disease",
+                    "I had @disease",
+                    "I have had @disease")
+    }
+}
+
+class TellNoPersonalNumber: Intent() {
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("I don't have a personal number.",
+                "I have no personal number.",
+                "I don't have one.")
+    }
+}
+
+class TellPersonalNumber(var personal_number: String?= null): Intent() {
+
+
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("My personal number is @personal_number",
+                "My number is @personal_number",
+                "@personal_number")
+    }
+}
+
+
+class NameList: ListEntity<PersonName>()
+
+class TellName(var names: NameList?= null): Intent() {
+
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("My name is @names.",
+                        "The name is @names.",
+                        "I'm @names",
+                        "@names.")
     }
 }
 
@@ -89,12 +146,19 @@ class TellNumberDose: Intent() {
     var dose: Number = Number(-1)
 
     override fun getExamples(lang: Language): List<String> {
-        return listOf("I have received @dose injections.",
+        return listOf("I have received @dose doses.",
+                "I have received @dose injections.",
                 "I have received @dose vaccinations.",
                 "I have taken @dose injections.",
                 "I have taken @dose vaccinations.",
+                "I have taken @dose doses.",
                 "I had @dose injections.",
-                "I had @dose vaccinations.")
+                "I had @dose vaccinations.",
+                "I had @dose doses.",
+                "@dose doses.",
+                "@dose injections.",
+                "@dose vaccinations.",
+                "@dose")
     }
 }
 
