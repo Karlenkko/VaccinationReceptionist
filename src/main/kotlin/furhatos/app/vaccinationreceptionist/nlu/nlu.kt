@@ -6,7 +6,7 @@ import furhatos.nlu.common.Number
 import java.util.*
 
 // vaccine types
-class Vaccine : EnumEntity() {
+class Vaccine : EnumEntity(speechRecPhrases = true) {
 
     override fun getEnum(lang: Language): List<String> {
         return listOf("Moderna", "BioNTech", "Janssen", "AstraZeneca")

@@ -134,8 +134,14 @@ val General: State = state(Interaction) {
 
 // if succeeds, store info in the backend and thank the person
 val End : State = state(parent = General) {
-    //onEntry() {
-    //}
+    onEntry() {
+        random(
+                { furhat.say("Please go to the waiting room. You will get vaccinated very soon! Have a nice day!") }
+        )
+        // TODO
+        // store info in the backend or log system
+        goto(Idle)
+    }
 }
 
 val RefuseExplain : State = state(parent = General) {
@@ -151,10 +157,10 @@ val RefuseExplain : State = state(parent = General) {
 }
 
 val CallMedicalStaff : State = state(parent = General) {
-    //onEntry() {
-    //    furhat.say("")
-    //    goto(idle)
-    //}
+    onEntry() {
+        furhat.say("Your physical condition or the question you asked is beyond my capacity. Please wait a moment, our medical staff will come to talk to you")
+        goto(Idle)
+    }
 }
 
 val RequestFever : State = state(parent = General) {
@@ -382,19 +388,21 @@ val RequestImmunodeficiency : State = state(parent = General) {
         furhat.ask("Do you have chronic diseases or do you suffer from immunodeficiency (e.g., due to chemotherapy, immunosuppressive therapy or other medications)?")
     }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse<Yes> {
+        random(
+                { furhat.say("You have higher change of being seriously ill due to Covid 19, therefore we advice you to receive extra booster dose after the second dose.") }
+        )
+        users.current.info.immunodeficiency = true
+        goto(CheckEligibility)
+    }
 
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<No> {
+        random(
+                { furhat.say("Okay, no such diseases.") }
+        )
+        users.current.info.immunodeficiency = false
+        goto(CheckEligibility)
+    }
 }
 
 val RequestAllergy : State = state(parent = General) {
@@ -402,19 +410,21 @@ val RequestAllergy : State = state(parent = General) {
         furhat.ask("Do you have any allergies that at some point have caused such severe reactions that you needed hospital care?")
     }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse<Yes> {
+        random(
+                { furhat.say("Okay, you have experienced severe allergic reactions.") }
+        )
+        users.current.info.allergy = true
+        goto(CallMedicalStaff)
+    }
 
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<No> {
+        random(
+                { furhat.say("Okay, you don't have.") }
+        )
+        users.current.info.allergy = false
+        goto(CheckEligibility)
+    }
 }
 
 val RequestSevereReaction : State = state(parent = General) {
@@ -422,19 +432,21 @@ val RequestSevereReaction : State = state(parent = General) {
         furhat.ask("Have you ever had a severe reaction to previous vaccinations that needed hospital care?")
     }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse<Yes> {
+        random(
+                { furhat.say("Okay, you have had a severe reaction to previous vaccinations.") }
+        )
+        users.current.info.severe_reaction = true
+        goto(CallMedicalStaff)
+    }
 
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<No> {
+        random(
+                { furhat.say("Okay, you haven't had any.") }
+        )
+        users.current.info.severe_reaction = false
+        goto(CheckEligibility)
+    }
 }
 
 val RequestBleeding : State = state(parent = General) {
@@ -442,19 +454,21 @@ val RequestBleeding : State = state(parent = General) {
         furhat.ask("Do you have an increased bleeding tendency due to disease or medicine?")
     }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse<Yes> {
+        random(
+                { furhat.say("You are still qualified to get vaccinated, but please inform our medical staff of your conditions so that they can pay special attention.") }
+        )
+        users.current.info.bleeding = true
+        goto(CheckEligibility)
+    }
 
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<No> {
+        random(
+                { furhat.say("Okay, no increased bleeding tendency.") }
+        )
+        users.current.info.bleeding = false
+        goto(CheckEligibility)
+    }
 }
 
 val RequestPregnant : State = state(parent = General) {
@@ -493,7 +507,7 @@ val RequestCountPregnancy : State = state(parent = General) {
 
 val RequestKnownDisease : State = state(parent = General) {
     onEntry() {
-        furhat.ask("Do you have any known diseases?")
+        furhat.ask("Do you have any known diseases or risk factors like obesity, high blood pressure or diabetes?")
     }
 
     onResponse<Yes> {
@@ -515,19 +529,13 @@ val RequestConfirmMedicalInfo : State = state(parent = General) {
         furhat.ask("Are you sure that you have correctly answered all the questions?")
     }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse<Yes> {
+        users.current.info.confirm_medical_info = true
+        goto(CheckEligibility)
+    }
 
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    //TODO
+    // onResponse<No>
 }
 
 val RequestPersonalNum : State = state(parent = General) {
@@ -570,23 +578,33 @@ val RequestName : State = state(parent = General) {
 
 val RequestConsent : State = state(parent = General) {
     onEntry() {
-        val typeVaccine = users.current.info.recommended_type
+        // rule-based vaccine recommendation
+        var typeVaccine = Vaccine()
+        val info = users.current.info
+        when {
+            info.last_dose_type != null && info.last_dose_reaction == false -> typeVaccine = info.last_dose_type!!
+            info.age.value!! in 12..30 -> typeVaccine.value = "BioNTech"
+            else -> random({ typeVaccine.value = "BioNTech" }, { typeVaccine.value = "Moderna" })
+        }
+        users.current.info.recommended_type = typeVaccine
         furhat.ask("According to your conditions, we recommend $typeVaccine to you. Would you like to get vaccinated according to our recommendation?")
     }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CallMedicalStaff)
-    //}
+    onResponse<Yes> {
+        random(
+                { furhat.say("I'm glad to hear that.") }
+        )
+        users.current.info.consent = true
+        goto(End)
+    }
 
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(End)
-    //}
+    onResponse<No> {
+        random(
+                { furhat.say("I'm sorry to hear that. Vaccination protects both you and the ones you love. I respect your choice and hope to see you again.") }
+        )
+        users.current.info.consent = false
+        goto(Idle)
+    }
 }
 
 // control the questions to ask
