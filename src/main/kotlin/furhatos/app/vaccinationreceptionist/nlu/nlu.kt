@@ -10,7 +10,10 @@ import furhatos.util.Language
 class Vaccine : EnumEntity(speechRecPhrases = true) {
 
     override fun getEnum(lang: Language): List<String> {
-        return listOf("Moderna", "BioNTech", "Janssen", "AstraZeneca")
+        return listOf("Moderna:Moderna,Spikevax", "BioNTech:BioNTech,Pfizer,Tozinameran,Comirnaty",
+                "Janssen:Janssen,Johnson,Johnson Johnson", "AstraZeneca:AstraZeneca,Oxford,Vaxzevria",
+                "CoronaVac:CoronaVac,Sinovac", "Sinopharm"
+                )
     }
 
     override fun toText(lang: Language): String {

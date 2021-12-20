@@ -159,6 +159,7 @@ val RefuseExplain : State = state(parent = General) {
             info.count_dose.value!! == 2 -> furhat.say("You need to wait for at least 6 months after the second dose.")
             info.recovery == false -> furhat.say("You should wait for 6 months after you get fully recovered from the covid-19 symptoms.")
             info.six_months_after_recovery == false -> furhat.say("You should wait for 6 months after you get fully recovered from the covid-19 symptoms.")
+            info.known_disease == false -> furhat.say("Pregnant women under 35 years of age and without risk factors are recommended to be vaccinated after week 12")
         }
         furhat.say("If you have further questions, please consult your doctor. Take care of yourself, and be well. Bye.")
         goto(Idle)
@@ -596,7 +597,7 @@ val RequestConsent : State = state(parent = General) {
         var typeVaccine = Vaccine()
         val info = users.current.info
         when {
-            info.last_dose_type != null && info.last_dose_reaction == false -> typeVaccine = info.last_dose_type!!
+            info.last_dose_type != null && info.last_dose_reaction == false && (info.last_dose_type!!.value == "Moderna" || info.last_dose_type!!.value == "BioNTech") -> typeVaccine = info.last_dose_type!!
             info.age.value!! in 12..30 -> typeVaccine.value = "BioNTech"
             else -> random({ typeVaccine.value = "BioNTech" }, { typeVaccine.value = "Moderna" })
         }
