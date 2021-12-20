@@ -1,9 +1,10 @@
 package furhatos.app.vaccinationreceptionist.nlu
 
-import furhatos.nlu.*
-import furhatos.util.Language
+import furhatos.nlu.EnumEntity
+import furhatos.nlu.Intent
+import furhatos.nlu.TextGenerator
 import furhatos.nlu.common.Number
-import java.util.*
+import furhatos.util.Language
 
 // vaccine types
 class Vaccine : EnumEntity(speechRecPhrases = true) {
@@ -24,7 +25,7 @@ class ReceiveVaccination: Intent(), TextGenerator {
     var age: Number = Number(-1)             //How old are you?
     var parent_consent: Boolean? = null            //Do you have the consent of your parents or a legal guardian?
     var count_dose: Number = Number(-1)      //How many doses have you ever received till now?
-    var last_dose_date: Date? = null               //When was your last dose? Please tell me the exact date.
+    var last_dose_date: furhatos.nlu.common.Date? = null               //When was your last dose? Please tell me the exact date.
     var last_dose_type: Vaccine? = null            //What type of vaccine did you get last time?
     var last_dose_reaction: Boolean? = null        //Did you develop an allergic reaction thereafter? Have you had any other unusual reactions after vaccination?
     var infection: Boolean? = null                 //Has it been reliably proven that you were infected with the Covid-19 in the past?
@@ -68,5 +69,38 @@ class TellCountPregnancy : Intent() {
     override fun getExamples(lang: Language): List<String> {
         return listOf("I have been pregnant for @count_pregnancy months", "I'm pregnant for @count_pregnancy months", "I'm @count_pregnancy months pregnant",
                 "@count_pregnancy months", "@count_pregnancy")
+    }
+}
+
+// tell the age
+class TellAge : Intent() {
+    var age: Number = Number(-1)
+
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("I'm @age years old.", "I'm @age", "@age")
+    }
+}
+
+class TellNumberDose: Intent() {
+    var dose: Number = Number(-1)
+
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("I have received @dose injections.",
+                "I have received @dose vaccinations.",
+                "I have taken @dose injections.",
+                "I have taken @dose vaccinations.",
+                "I had @dose injections.",
+                "I had @dose vaccinations.")
+    }
+}
+
+class TellNotAnyDose: Intent() {
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("I have never received any dose.",
+                    "I never received any dose.",
+                    "I have never received any vaccination.",
+                    "I never received any vaccination.",
+                    "I haven't received any dose.",
+                    "I haven't received any vaccination")
     }
 }

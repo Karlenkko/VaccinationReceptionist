@@ -4,6 +4,8 @@ import furhatos.app.vaccinationreceptionist.info
 import furhatos.app.vaccinationreceptionist.nlu.*
 import furhatos.nlu.common.*
 import furhatos.flow.kotlin.*
+import furhatos.nlu.common.Number
+import java.util.*
 
 //　greeting + introduction + ask to start slot filling
 val Start: State = state(Interaction) {
@@ -150,6 +152,13 @@ val RefuseExplain : State = state(parent = General) {
         when {
             info.fever == true -> furhat.say("Due to regulations, you need to recover from the fever.")
             info.recent_vaccination == true -> furhat.say("You need to wait for at least a week after your first dose, or 6 month after the second.")
+            info.age.value!! < 12 -> furhat.say("You need to wait till you are more than 12 years old.")
+            info.count_dose.value!! > 2 -> furhat.say("You have received all doses, including the booster.")
+            (info.count_dose.value!! == 2 && info.age.value!! < 18) -> furhat.say("You are less than 18 years old, and there is no need for a third dose.")
+            info.count_dose.value!! == 1 -> furhat.say("You need to wait for at least 7 days after the first dose.")
+            info.count_dose.value!! == 2 -> furhat.say("You need to wait for at least 6 months after the second dose.")
+            info.recovery == false -> furhat.say("You should wait for 6 months after you get fully recovered from the covid-19 symptoms.")
+            info.six_months_after_recovery == false -> furhat.say("You should wait for 6 months after you get fully recovered from the covid-19 symptoms.")
         }
         furhat.say("If you have further questions, please consult your doctor. Take care of yourself, and be well. Bye.")
         goto(Idle)
@@ -158,7 +167,7 @@ val RefuseExplain : State = state(parent = General) {
 
 val CallMedicalStaff : State = state(parent = General) {
     onEntry() {
-        furhat.say("Your physical condition or the question you asked is beyond my capacity. Please wait a moment, our medical staff will come to talk to you")
+        furhat.say("Our medical staff is waiting for you on the right hand side. Please consult the staff for further steps. Bye")
         goto(Idle)
     }
 }
@@ -208,19 +217,15 @@ val RequestAge : State = state(parent = General) {
         furhat.ask("How old are you?")
     }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
-
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<TellAge> {
+        furhat.say("Okay, you are ${it.intent.age} years old.")
+        users.current.info.age = it.intent.age
+        if (users.current.info.age.value!! < 12) {
+            goto(RefuseExplain)
+        } else {
+            goto(CheckEligibility)
+        }
+    }
 }
 
 val RequestParentConsent : State = state(parent = General) {
@@ -229,18 +234,18 @@ val RequestParentConsent : State = state(parent = General) {
     }
 
     // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse<Yes> {
+        furhat.say("Great, you shall need to show the certificate later.")
+        users.current.info.parent_consent = true
+        goto(CheckEligibility)
+    }
 
     // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<No> {
+        furhat.say("It's ok, but you need to meet our medical staff now.")
+        users.current.info.parent_consent = false
+        goto(CallMedicalStaff)
+    }
 }
 
 val RequestCountDose : State = state(parent = General) {
@@ -249,38 +254,53 @@ val RequestCountDose : State = state(parent = General) {
     }
 
     // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse<TellNumberDose> {
+        users.current.info.count_dose = it.intent.dose
+        furhat.say("I see, you have received ${it.intent.dose} doses.")
+        if (users.current.info.count_dose.value!! > 2 || (users.current.info.count_dose.value!! == 2 && users.current.info.age.value!! < 18 )) {
+            goto(RefuseExplain)
+        } else {
+            goto(CheckEligibility)
+        }
+    }
 
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<TellNotAnyDose> {
+        users.current.info.count_dose = Number(0)
+        furhat.say("I see, you have not yet received any dose.")
+        goto(CheckEligibility)
+    }
 }
 
 val RequestLastDoseDate : State = state(parent = General) {
     onEntry() {
-        furhat.ask("When was your last dose? Please tell me the exact date.")
+        var date = furhat.askFor<furhatos.nlu.common.Date>("When was your last dose? Please tell me the exact date.") {
+            onResponse<DontKnow> {
+                furhat.say("That is important, you should really know that!")
+                reentry()
+            }
+        }
+        users.current.info.last_dose_date = date
+        furhat.say("Your last dose was on $date.")
+        val today = Calendar.getInstance()
+        val converted_last_dose_date = Calendar.getInstance()
+        val arr = users.current.info.last_dose_date?.value?.split("-")
+        converted_last_dose_date.set(Integer.parseInt(arr?.get(0)), Integer.parseInt(arr?.get(1)) - 1, Integer.parseInt(arr?.get(2)))
+        if (converted_last_dose_date > today) {
+            converted_last_dose_date.add(Calendar.YEAR, -1)
+        }
+        var temp = converted_last_dose_date
+        temp.add(Calendar.DATE, 7)
+        if (temp > today && users.current.info.count_dose.value!! == 1) {
+            goto(RefuseExplain)
+        }
+        temp = converted_last_dose_date
+        temp.add(Calendar.MONTH, 6)
+        if (temp > today && users.current.info.count_dose.value!! == 2) {
+            goto(RefuseExplain)
+        }
+
+        goto(CheckEligibility)
     }
-
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
-
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
 }
 
 val RequestLastDoseType : State = state(parent = General) {
@@ -288,19 +308,11 @@ val RequestLastDoseType : State = state(parent = General) {
         furhat.ask("What type of vaccine did you get last time?")
     }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
-
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<Vaccine> {
+        users.current.info.last_dose_type = it.intent
+        furhat.say("OK, you had ${it.intent} last time.")
+        goto(CheckEligibility)
+    }
 }
 
 val RequestLastDoseReaction : State = state(parent = General) {
@@ -308,19 +320,19 @@ val RequestLastDoseReaction : State = state(parent = General) {
         furhat.ask("Did you develop an allergic reaction thereafter? Have you had any other unusual reactions after vaccination?")
     }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    // go straight to CallMedicalStaff when not eligible
+    onResponse<Yes> {
+        furhat.say("Could you please give more details about the symptoms to our medical staff?")
+        users.current.info.last_dose_reaction = true
+        goto(CallMedicalStaff)
+    }
 
     // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<No> {
+        furhat.say("Great, you had no unusual reactions.")
+        users.current.info.last_dose_reaction = false
+        goto(CheckEligibility)
+    }
 }
 
 val RequestInfection : State = state(parent = General) {
@@ -328,19 +340,17 @@ val RequestInfection : State = state(parent = General) {
         furhat.ask("Has it been reliably proven that you were infected with the Covid-19 in the past?")
     }
 
-    // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse<Yes> {
+        furhat.say("I see.")
+        users.current.info.infection = true
+        goto(CheckEligibility)
+    }
 
-    // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<No> {
+        furhat.say("OK, you haven't been infected with the Covid-19 in the past.")
+        users.current.info.infection = false
+        goto(CheckEligibility)
+    }
 }
 
 val RequestRecovery : State = state(parent = General) {
@@ -349,18 +359,18 @@ val RequestRecovery : State = state(parent = General) {
     }
 
     // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse<No> {
+        furhat.say("OK, you still have symptoms of covid-19.")
+        users.current.info.recovery = false
+        goto(RefuseExplain)
+    }
 
     // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<Yes> {
+        furhat.say("Now you feel good.")
+        users.current.info.recovery = true
+        goto(CheckEligibility)
+    }
 }
 
 val RequestSixMonthsAfterRecovery : State = state(parent = General) {
@@ -369,18 +379,22 @@ val RequestSixMonthsAfterRecovery : State = state(parent = General) {
     }
 
     // go straight to RefuseExplain when not eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(RefuseExplain)
-    //}
+    onResponse<No> {
+        furhat.say("You recovered less than 6 months ago.")
+        users.current.info.six_months_after_recovery = false
+        goto(RefuseExplain)
+    }
 
     // go back to CheckEligibility only when eligible
-    //onResponse<example> {
-    //    furhat.say("")
-    //    users.current.info.attribute = it.intent.attribute
-    //    goto(CheckEligibility)
-    //}
+    onResponse<Yes> {
+        furhat.say("OK, you recovered more than 6 months ago.")
+        users.current.info.six_months_after_recovery = true
+        goto(CheckEligibility)
+    }
+    onResponse<DontKnow> {
+        furhat.say("In this case, please look for our medical staff.")
+        goto(CallMedicalStaff)
+    }
 }
 
 val RequestImmunodeficiency : State = state(parent = General) {
