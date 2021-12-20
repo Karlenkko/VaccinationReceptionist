@@ -33,6 +33,7 @@ class ReceiveVaccination: Intent(), TextGenerator {
     var last_dose_reaction: Boolean? = null        //Did you develop an allergic reaction thereafter? Have you had any other unusual reactions after vaccination?
     var infection: Boolean? = null                 //Has it been reliably proven that you were infected with the Covid-19 in the past?
     var recovery: Boolean? = null                  //Did you recover from that?
+    var short_interval: Boolean? = null            //When was your last dose?
     var six_months_after_recovery: Boolean? = null //Have you waited at least 6 months since recovery?
     var immunodeficiency: Boolean? = null          //Do you have chronic diseases or do you suffer from immunodeficiency (e.g., due to chemotherapy, immunosuppressive therapy or other medications)?
     var allergy: Boolean? = null                   //Do you have any allergies that at some point have caused such severe reactions that you needed hospital care?
