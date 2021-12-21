@@ -159,8 +159,8 @@ val RefuseExplain : State = state(parent = General) {
             info.age.value!! < 12 -> furhat.say("You need to wait till you are more than 12 years old.")
             info.count_dose.value!! > 2 -> furhat.say("You have received all doses, including the booster.")
             (info.count_dose.value!! == 2 && info.age.value!! < 18) -> furhat.say("You are less than 18 years old, and there is no need for a third dose.")
-            (info.count_dose.value!! == 1 && info.short_interval!!) -> furhat.say("You need to wait for at least 7 days after the first dose.")
-            (info.count_dose.value!! == 2 && info.short_interval!!) -> furhat.say("You need to wait for at least 6 months after the second dose.")
+            (info.count_dose.value!! == 1 && info.short_interval == true) -> furhat.say("You need to wait for at least 7 days after the first dose.")
+            (info.count_dose.value!! == 2 && info.short_interval == true) -> furhat.say("You need to wait for at least 6 months after the second dose.")
             info.recovery == false -> furhat.say("You should wait for 6 months after you get fully recovered from the covid-19 symptoms.")
             info.six_months_after_recovery == false -> furhat.say("You should wait for 6 months after you get fully recovered from the covid-19 symptoms.")
             info.known_disease == false -> furhat.say("Pregnant women under 35 years of age and without risk factors are recommended to be vaccinated after week 12")
@@ -307,6 +307,7 @@ val RequestLastDoseDate : State = state(parent = General) {
         }
         var temp = converted_last_dose_date
         temp.add(Calendar.DATE, 7)
+        users.current.info.short_interval = false
         if (temp > today && users.current.info.count_dose.value!! == 1) {
             users.current.info.short_interval = true
             goto(RefuseExplain)

@@ -10,7 +10,8 @@ class RequestSideEffects: Intent() {
         return listOf(
                 "What are the side effects of the vaccination?",
                 "What is the symptom after the vaccination?",
-                "How I might feel after the vaccination?"
+                "How I might feel after the vaccination?",
+                "How will I feel after the vaccination?"
         )
     }
 }
@@ -19,7 +20,9 @@ class RequestCOVIDSymptoms: Intent() {
     override fun getExamples(lang: Language): List<String> {
         return listOf(
                 "What are frequent symptoms?",
-                "What are possible symptoms?"
+                "What are possible symptoms?",
+                "What are symptoms of Covid 19?",
+                "What are symptoms if I'm infected?"
         )
     }
 }
@@ -49,7 +52,9 @@ class RequestPregnancy: Intent() {
     override fun getExamples(lang: Language): List<String> {
         return listOf(
                 "Are the vaccines safe for pregnant women?",
-                "Is the vaccine safe for pregnant women?"
+                "Is the vaccine safe for pregnant women?",
+                "Can pregnant woman get vaccinated?",
+                "Can pregnant woman receive vaccination?"
         )
     }
 }
@@ -57,7 +62,9 @@ class RequestPregnancy: Intent() {
 class RequestVaccineProtection: Intent() {
     override fun getExamples(lang: Language): List<String> {
         return listOf(
-                "Can the vaccines protect me against all variants?"
+                "Can the vaccines protect me against all variants?",
+                "Can the vaccines protect me against Omicron variant?",
+                "Can the vaccines protect me against Delta variant?"
         )
     }
 }
@@ -68,7 +75,8 @@ class RequestVaccine: Intent() {
                 "What's the vaccine that you have?",
                 "What is your vaccine?",
                 "Which vaccine do you have?",
-                "What are the vaccines that you offer?"
+                "What are the vaccines that you offer?",
+                "What are the vaccines that you have?"
         )
     }
 }
