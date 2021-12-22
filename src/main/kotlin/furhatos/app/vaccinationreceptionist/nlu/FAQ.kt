@@ -139,7 +139,10 @@ class RequestVaccinationCertificate: Intent() {
 class RequestVaccineType: Intent() {
     override fun getExamples(lang: Language): List<String> {
         return listOf(
-                "Can I choose the type of the vaccine?"
+                "Can I choose the type of the vaccine?",
+                "Can I choose the vaccine?",
+                "Can I select the type of the vaccine?",
+                "Can I select the vaccine?"
         )
     }
 }

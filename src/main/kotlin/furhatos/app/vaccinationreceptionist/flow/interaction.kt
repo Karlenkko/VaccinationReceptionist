@@ -134,6 +134,18 @@ val General: State = state(Interaction) {
         furhat.say(it.resp)
         reentry()
     }
+
+    // change age
+    onResponse<TellAge> {
+        furhat.say("Okay, you are ${it.intent.age} years old.")
+        users.current.info.age = it.intent.age
+        users.current.info.parent_consent = null
+        if (users.current.info.age.value!! < 12) {
+            goto(RefuseExplain)
+        } else {
+            goto(CheckEligibility)
+        }
+    }
 }
 
 // All slot-filling states
