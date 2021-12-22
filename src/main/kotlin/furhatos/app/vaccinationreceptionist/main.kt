@@ -12,4 +12,5 @@ class VaccinationreceptionistSkill : Skill() {
 
 fun main(args: Array<String>) {
     Skill.main(args)
+
 }
