@@ -145,6 +145,7 @@ val End : State = state(parent = General) {
                 { furhat.say("Please go to the waiting room. You will get vaccinated very soon! Have a nice day!") }
         )
         // TODO
+        sendToElasticsearch(users.current.info)
         // store info in the backend or log system
         goto(Idle)
     }
