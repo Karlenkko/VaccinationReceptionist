@@ -154,11 +154,11 @@ val General: State = state(Interaction) {
 // if succeeds, store info in the backend and thank the person
 val End : State = state(parent = General) {
     onEntry() {
+        sendToElasticsearch(users.current.info)
         random(
                 { furhat.say("Please go to the waiting room. You will get vaccinated very soon! Have a nice day!") }
         )
         // TODO
-        sendToElasticsearch(users.current.info)
         // store info in the backend or log system
         goto(Idle)
     }
@@ -167,6 +167,7 @@ val End : State = state(parent = General) {
 val RefuseExplain : State = state(parent = General) {
     onEntry() {
         val info = users.current.info
+        sendToElasticsearch(users.current.info)
         when {
             info.fever == true -> furhat.say("Due to regulations, you need to recover from the fever.")
             info.recent_vaccination == true -> furhat.say("You need to wait for at least a week after your first dose, or 6 month after the second.")
@@ -186,6 +187,7 @@ val RefuseExplain : State = state(parent = General) {
 
 val CallMedicalStaff : State = state(parent = General) {
     onEntry() {
+        sendToElasticsearch(users.current.info)
         furhat.say("Our medical staff is waiting for you on the right hand side. Please consult the staff for further steps. Bye")
         goto(Idle)
     }
@@ -754,10 +756,11 @@ val RequestConsent : State = state(parent = General) {
     }
 
     onResponse<No> {
+        users.current.info.consent = false
+        sendToElasticsearch(users.current.info)
         random(
                 { furhat.say("I'm sorry to hear that. Vaccination protects both you and the ones you love. I respect your choice and hope to see you again.") }
         )
-        users.current.info.consent = false
         goto(Idle)
     }
 }
