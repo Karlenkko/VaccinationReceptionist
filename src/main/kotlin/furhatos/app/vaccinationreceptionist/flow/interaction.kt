@@ -136,6 +136,7 @@ val General: State = state(Interaction) {
     }
 
     // change age
+    // Other error handling can be achieved in a similar way(if you agree with this idea)
     onResponse<TellAge> {
         furhat.say("Okay, you are ${it.intent.age} years old.")
         users.current.info.age = it.intent.age
