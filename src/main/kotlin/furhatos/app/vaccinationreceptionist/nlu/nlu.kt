@@ -1,5 +1,6 @@
 package furhatos.app.vaccinationreceptionist.nlu
 
+import com.google.gson.annotations.SerializedName
 import furhatos.nlu.EnumEntity
 import furhatos.nlu.Intent
 import furhatos.nlu.ListEntity
@@ -25,32 +26,32 @@ class Vaccine : EnumEntity(speechRecPhrases = true) {
 
 // main form with slots
 class ReceiveVaccination: Intent(), TextGenerator {
-    var fever: Boolean? = null                     //Do you currently have an acute illness with fever?
-    var recent_vaccination: Boolean? = null        //Have your received any other vaccine in the past 7 days?
-    var age: Number = Number(-1)             //How old are you?
-    var parent_consent: Boolean? = null            //Do you have the consent of your parents or a legal guardian?
-    var count_dose: Number = Number(-1)      //How many doses have you ever received till now?
-    var last_dose_date: furhatos.nlu.common.Date? = null               //When was your last dose? Please tell me the exact date.
-    var last_dose_type: Vaccine? = null            //What type of vaccine did you get last time?
-    var last_dose_reaction: Boolean? = null        //Did you develop an allergic reaction thereafter? Have you had any other unusual reactions after vaccination?
-    var infection: Boolean? = null                 //Has it been reliably proven that you were infected with the Covid-19 in the past?
-    var recovery: Boolean? = null                  //Did you recover from that?
-    var short_interval: Boolean? = null            //When was your last dose?
-    var six_months_after_recovery: Boolean? = null //Have you waited at least 6 months since recovery?
-    var immunodeficiency: Boolean? = null          //Do you have chronic diseases or do you suffer from immunodeficiency (e.g., due to chemotherapy, immunosuppressive therapy or other medications)?
-    var allergy: Boolean? = null                   //Do you have any allergies that at some point have caused such severe reactions that you needed hospital care?
-    var severe_reaction: Boolean? = null           //Have you ever had a severe reaction to previous vaccinations that needed hospital care?
-    var bleeding: Boolean? = null                  //Do you have an increased bleeding tendency due to disease or medicine?
-    var pregnant: Boolean? = null                  //Are you pregnant?
-    var count_pregnancy: Number = Number(-1) //For how many months have you been pregnant?
-    var known_disease: Boolean? = null             //Do you have any known diseases?
-    var confirm_medical_info: Boolean? = null      //Are you sure that you have correctly answered all the questions?
-//    var personal_num: String? = null
-    var name: String?=null
-//    var first_name: PersonName? = null
-//    var last_name: PersonName? = null
-    var recommended_type: Vaccine? = null
-    var consent: Boolean? = null                   //Would you like to get vaccinated according to our recommendation?
+    @SerializedName("fever") var fever: Boolean? = null                     //Do you currently have an acute illness with fever?
+    @SerializedName("recent_vaccination") var recent_vaccination: Boolean? = null        //Have your received any other vaccine in the past 7 days?
+    @SerializedName("age") var age: Number = Number(-1)             //How old are you?
+    @SerializedName("parent_consent") var parent_consent: Boolean? = null            //Do you have the consent of your parents or a legal guardian?
+    @SerializedName("count_dose") var count_dose: Number = Number(-1)      //How many doses have you ever received till now?
+    @SerializedName("last_dose_date") var last_dose_date: furhatos.nlu.common.Date? = null               //When was your last dose? Please tell me the exact date.
+    @SerializedName("last_dose_type") var last_dose_type: Vaccine? = null            //What type of vaccine did you get last time?
+    @SerializedName("last_dose_reaction") var last_dose_reaction: Boolean? = null        //Did you develop an allergic reaction thereafter? Have you had any other unusual reactions after vaccination?
+    @SerializedName("infection") var infection: Boolean? = null                 //Has it been reliably proven that you were infected with the Covid-19 in the past?
+    @SerializedName("recovery") var recovery: Boolean? = null                  //Did you recover from that?
+    @SerializedName("short_interval") var short_interval: Boolean? = null            //When was your last dose?
+    @SerializedName("six_months_after_recovery") var six_months_after_recovery: Boolean? = null //Have you waited at least 6 months since recovery?
+    @SerializedName("immunodeficiency") var immunodeficiency: Boolean? = null          //Do you have chronic diseases or do you suffer from immunodeficiency (e.g., due to chemotherapy, immunosuppressive therapy or other medications)?
+    @SerializedName("allergy") var allergy: Boolean? = null                   //Do you have any allergies that at some point have caused such severe reactions that you needed hospital care?
+    @SerializedName("severe_reaction") var severe_reaction: Boolean? = null           //Have you ever had a severe reaction to previous vaccinations that needed hospital care?
+    @SerializedName("bleeding") var bleeding: Boolean? = null                  //Do you have an increased bleeding tendency due to disease or medicine?
+    @SerializedName("pregnant") var pregnant: Boolean? = null                  //Are you pregnant?
+    @SerializedName("count_pregnancy") var count_pregnancy: Number = Number(-1) //For how many months have you been pregnant?
+    @SerializedName("known_disease") var known_disease: Boolean? = null             //Do you have any known diseases?
+    @SerializedName("confirm_medical_info") var confirm_medical_info: Boolean? = null      //Are you sure that you have correctly answered all the questions?
+//    @SerializedName("personal_num") var personal_num: String? = null
+    @SerializedName("name") var name: String?=null
+//    @SerializedName("first_name") var first_name: PersonName? = null
+//    @SerializedName("last_name") var last_name: PersonName? = null
+    @SerializedName("recommended_type") var recommended_type: Vaccine? = null
+    @SerializedName("consent") var consent: Boolean? = null                   //Would you like to get vaccinated according to our recommendation?
 
     override fun getExamples(lang: Language): List<String> {
         return listOf(
