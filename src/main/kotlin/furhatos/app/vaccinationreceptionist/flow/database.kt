@@ -48,30 +48,116 @@ fun sendToElasticsearch(data: ReceiveVaccination) {
     val url = URL("http://127.0.0.1:9200/vaccination_patient_data/_doc")
     var body = Gson().toJson(PatientData(data))
 //    var body = "{\"fever\":false,\"recent_vaccination\":false,\"age\":17,\"parent_consent\":true,\"count_dose\":1,\"last_dose_date\":\"2021-11-01\",\"last_dose_type\":\"BioNTech\",\"last_dose_reaction\":false,\"infection\":true,\"recovery\":true,\"short_interval\":false,\"six_months_after_recovery\":true,\"immunodeficiency\":true,\"allergy\":false,\"severe_reaction\":false,\"bleeding\":true,\"pregnant\":true,\"count_pregnancy\":6,\"confirm_medical_info\":true,\"name\":\"John Watson\",\"recommended_type\":\"BioNTech\",\"consent\":true}"
-//    println(body)
-//    body = URLEncoder.encode(body, "UTF-8")
-    // TODO test local api
-    with(url.openConnection() as HttpURLConnection) {
-        // optional default is GET
-        requestMethod = "POST"
-        addRequestProperty("Content-Type", "application/json")
-        setDoOutput(true)
-        val wr = OutputStreamWriter(getOutputStream())
-        wr.write(body)
-        wr.flush()
+    println(body)
 
-        println("URL : $url")
-        println("Response Code : $responseCode")
+//    with(url.openConnection() as HttpURLConnection) {
+//        // optional default is GET
+//        requestMethod = "POST"
+//        addRequestProperty("Content-Type", "application/json")
+//        setDoOutput(true)
+//        val wr = OutputStreamWriter(getOutputStream())
+//        wr.write(body)
+//        wr.flush()
+//
+//        println("URL : $url")
+//        println("Response Code : $responseCode")
+//
+//        BufferedReader(InputStreamReader(inputStream)).use {
+//            val response = StringBuffer()
+//
+//            var inputLine = it.readLine()
+//            while (inputLine != null) {
+//                response.append(inputLine)
+//                inputLine = it.readLine()
+//            }
+//            println("Response : $response")
+//        }
+//    }
+}
 
-        BufferedReader(InputStreamReader(inputStream)).use {
-            val response = StringBuffer()
+fun sendReentryLogToElasticsearch(reentry: ReentryCount) {
+    val url = URL("http://127.0.0.1:9200/reentry_count/_doc")
+    var body = Gson().toJson(reentry)
+    println(body)
+    //    with(url.openConnection() as HttpURLConnection) {
+//        // optional default is GET
+//        requestMethod = "POST"
+//        addRequestProperty("Content-Type", "application/json")
+//        setDoOutput(true)
+//        val wr = OutputStreamWriter(getOutputStream())
+//        wr.write(body)
+//        wr.flush()
+//
+//        println("URL : $url")
+//        println("Response Code : $responseCode")
+//
+//        BufferedReader(InputStreamReader(inputStream)).use {
+//            val response = StringBuffer()
+//
+//            var inputLine = it.readLine()
+//            while (inputLine != null) {
+//                response.append(inputLine)
+//                inputLine = it.readLine()
+//            }
+//            println("Response : $response")
+//        }
+//    }
+}
 
-            var inputLine = it.readLine()
-            while (inputLine != null) {
-                response.append(inputLine)
-                inputLine = it.readLine()
-            }
-            println("Response : $response")
-        }
-    }
+fun sendCorrectionIntentToElasticsearch(correctionIntent: UserCorrectionIntentCount) {
+    val url = URL("http://127.0.0.1:9200/correction_count/_doc")
+    var body = Gson().toJson(correctionIntent)
+    println(body)
+    //    with(url.openConnection() as HttpURLConnection) {
+//        // optional default is GET
+//        requestMethod = "POST"
+//        addRequestProperty("Content-Type", "application/json")
+//        setDoOutput(true)
+//        val wr = OutputStreamWriter(getOutputStream())
+//        wr.write(body)
+//        wr.flush()
+//
+//        println("URL : $url")
+//        println("Response Code : $responseCode")
+//
+//        BufferedReader(InputStreamReader(inputStream)).use {
+//            val response = StringBuffer()
+//
+//            var inputLine = it.readLine()
+//            while (inputLine != null) {
+//                response.append(inputLine)
+//                inputLine = it.readLine()
+//            }
+//            println("Response : $response")
+//        }
+//    }
+}
+
+fun sendFAQIntentToElasticsearch(faqIntentCount: UserFAQIntentCount) {
+    val url = URL("http://127.0.0.1:9200/faq_count/_doc")
+    var body = Gson().toJson(faqIntentCount)
+    println(body)
+    //    with(url.openConnection() as HttpURLConnection) {
+//        // optional default is GET
+//        requestMethod = "POST"
+//        addRequestProperty("Content-Type", "application/json")
+//        setDoOutput(true)
+//        val wr = OutputStreamWriter(getOutputStream())
+//        wr.write(body)
+//        wr.flush()
+//
+//        println("URL : $url")
+//        println("Response Code : $responseCode")
+//
+//        BufferedReader(InputStreamReader(inputStream)).use {
+//            val response = StringBuffer()
+//
+//            var inputLine = it.readLine()
+//            while (inputLine != null) {
+//                response.append(inputLine)
+//                inputLine = it.readLine()
+//            }
+//            println("Response : $response")
+//        }
+//    }
 }

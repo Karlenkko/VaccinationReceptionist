@@ -3,12 +3,15 @@ package furhatos.app.vaccinationreceptionist.flow
 import furhatos.app.vaccinationreceptionist.info
 import furhatos.app.vaccinationreceptionist.nlu.*
 import furhatos.app.vaccinationreceptionist.reentryCount
+import furhatos.app.vaccinationreceptionist.userCorrectionIntentCount
+import furhatos.app.vaccinationreceptionist.userFAQIntentCount
 import furhatos.nlu.common.*
 import furhatos.flow.kotlin.*
 import furhatos.gestures.Gestures
 import furhatos.nlu.common.Number
 import java.util.*
 
+var reentryFromFAQorModification: Boolean = false
 //　greeting + introduction + ask to start slot filling
 val Start: State = state(Interaction) {
     onEntry {
@@ -34,6 +37,8 @@ val Start: State = state(Interaction) {
 // parent state for common answers
 val General: State = state(Interaction) {
     onResponse<RequestSideEffects> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_side_effects_count += 1
         raise(TellSideEffects())
     }
     onEvent<TellSideEffects> {
@@ -42,6 +47,8 @@ val General: State = state(Interaction) {
     }
 
     onResponse<RequestCOVIDSymptoms> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_covid_symptoms_count += 1
         raise(TellCOVIDSymptoms())
     }
     onEvent<TellCOVIDSymptoms> {
@@ -50,6 +57,8 @@ val General: State = state(Interaction) {
     }
 
     onResponse<RequestBooster> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_booster_count += 1
         raise(TellBooster())
     }
     onEvent<TellBooster> {
@@ -58,6 +67,8 @@ val General: State = state(Interaction) {
     }
 
     onResponse<RequestBreastFeeding> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_breast_feeding_count += 1
         raise(TellBreastFeeding())
     }
     onEvent<TellBreastFeeding> {
@@ -66,6 +77,8 @@ val General: State = state(Interaction) {
     }
 
     onResponse<RequestPregnancy> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_pregnancy_count += 1
         raise(TellPregnancy())
     }
     onEvent<TellPregnancy> {
@@ -74,6 +87,8 @@ val General: State = state(Interaction) {
     }
 
     onResponse<RequestVaccineProtection> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_vaccine_protection_count += 1
         raise(TellVaccineProtection())
     }
     onEvent<TellVaccineProtection> {
@@ -82,6 +97,9 @@ val General: State = state(Interaction) {
     }
 
     onResponse<RequestVaccine> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_vaccine_count += 1
+
         raise(TellVaccine())
     }
     onEvent<TellVaccine> {
@@ -90,6 +108,9 @@ val General: State = state(Interaction) {
     }
 
     onResponse<RequestVaccineSafety> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_vaccine_safety_count += 1
+
         raise(TellVaccineSafety())
     }
     onEvent<TellVaccineSafety> {
@@ -98,6 +119,9 @@ val General: State = state(Interaction) {
     }
 
     onResponse<RequestNationality> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_nationality_count += 1
+
         raise(TellNationality())
     }
     onEvent<TellNationality> {
@@ -106,6 +130,9 @@ val General: State = state(Interaction) {
     }
 
     onResponse<RequestVaccinationFee> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_vaccination_fee_count += 1
+
         raise(TellVaccinationFee())
     }
     onEvent<TellVaccinationFee> {
@@ -114,6 +141,9 @@ val General: State = state(Interaction) {
     }
 
     onResponse<RequestAfterVaccinationRegulation> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_after_vaccination_regulation_count += 1
+
         raise(TellAfterVaccinationRegulation())
     }
     onEvent<TellAfterVaccinationRegulation> {
@@ -122,6 +152,9 @@ val General: State = state(Interaction) {
     }
 
     onResponse<RequestVaccinationCertificate> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_vaccination_certificate_count += 1
+
         raise(TellVaccinationCertificate())
     }
     onEvent<TellVaccinationCertificate> {
@@ -130,6 +163,9 @@ val General: State = state(Interaction) {
     }
 
     onResponse<RequestVaccineType> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_vaccine_type_count += 1
+
         raise(TellVaccineType())
     }
     onEvent<TellVaccineType> {
@@ -138,7 +174,9 @@ val General: State = state(Interaction) {
     }
 
     // change age
-    onResponse<TellAge> {
+    onResponse<TellAgeFormally> {
+        reentryFromFAQorModification = true
+        users.current.userCorrectionIntentCount.tell_age_count += 1
         furhat.gesture(Gestures.Oh)
         furhat.say("You are ${it.intent.age} years old.")
         users.current.info.age = it.intent.age
@@ -151,15 +189,19 @@ val General: State = state(Interaction) {
     }
 
     onResponse<TellNotPregnant> {
+        reentryFromFAQorModification = true
+        users.current.userCorrectionIntentCount.tell_pregnancy_count += 1
         furhat.gesture(Gestures.Oh)
         furhat.say("I see. You are not pregnant.")
         users.current.info.pregnant = false
         users.current.info.count_pregnancy.value = -1
         users.current.info.known_disease = null
-        reentry()
+        goto(CheckEligibility)
     }
 
     onResponse<TellIsPregnant> {
+        reentryFromFAQorModification = true
+        users.current.userCorrectionIntentCount.tell_pregnancy_count += 1
         furhat.gesture(Gestures.Oh)
         furhat.say("I see. You are pregnant.")
         users.current.info.pregnant = true
@@ -169,16 +211,20 @@ val General: State = state(Interaction) {
     }
 
     onResponse<TellNotAnyDose> {
+        reentryFromFAQorModification = true
+        users.current.userCorrectionIntentCount.tell_number_dose_count += 1
         furhat.gesture(Gestures.Oh)
         furhat.say("OK, you haven't received any vaccine against Covid 19.")
         users.current.info.count_dose.value = 0
         users.current.info.last_dose_date = null
         users.current.info.last_dose_type = null
         users.current.info.last_dose_reaction = null
-        reentry()
+        goto(CheckEligibility)
     }
 
     onResponse<TellNumberDoseFormally> {
+        reentryFromFAQorModification = true
+        users.current.userCorrectionIntentCount.tell_number_dose_count += 1
         users.current.info.last_dose_date = null
         users.current.info.last_dose_type = null
         users.current.info.last_dose_reaction = null
@@ -194,6 +240,8 @@ val General: State = state(Interaction) {
     }
 
     onResponse<TellIsInfected> {
+        reentryFromFAQorModification = true
+        users.current.userCorrectionIntentCount.tell_infection_count += 1
         furhat.gesture(Gestures.Oh)
         furhat.say("I see, you are currently infected with Covid 19.")
         users.current.info.infection = true
@@ -203,6 +251,8 @@ val General: State = state(Interaction) {
     }
 
     onResponse<TellWasInfected> {
+        reentryFromFAQorModification = true
+        users.current.userCorrectionIntentCount.tell_infection_count += 1
         furhat.gesture(Gestures.Oh)
         furhat.say("I see, you have Covid 19 infection history.")
         users.current.info.infection = true
@@ -221,6 +271,9 @@ val End : State = state(parent = General) {
                 { furhat.say("Please go to the waiting room. You will get vaccinated very soon! Have a nice day!") }
         )
         sendToElasticsearch(users.current.info)
+        sendReentryLogToElasticsearch(users.current.reentryCount)
+        sendCorrectionIntentToElasticsearch(users.current.userCorrectionIntentCount)
+        sendFAQIntentToElasticsearch(users.current.userFAQIntentCount)
         goto(Idle)
     }
 }
@@ -244,6 +297,10 @@ val RefuseExplain : State = state(parent = General) {
         }
         furhat.say("If you have further questions, please consult your doctor. Take care of yourself, and be well. Bye.")
         sendToElasticsearch(users.current.info)
+        sendReentryLogToElasticsearch(users.current.reentryCount)
+        sendCorrectionIntentToElasticsearch(users.current.userCorrectionIntentCount)
+        sendFAQIntentToElasticsearch(users.current.userFAQIntentCount)
+
         goto(Idle)
     }
 }
@@ -255,12 +312,21 @@ val CallMedicalStaff : State = state(parent = General) {
         furhat.say("Sorry, I can't handle your situation.")
         furhat.say("Don't worry, our medical staff is waiting for you on the right hand side. Please consult the staff for further steps. Bye")
         sendToElasticsearch(users.current.info)
+        sendReentryLogToElasticsearch(users.current.reentryCount)
+        sendCorrectionIntentToElasticsearch(users.current.userCorrectionIntentCount)
+        sendFAQIntentToElasticsearch(users.current.userFAQIntentCount)
+
         goto(Idle)
     }
 }
 
 val RequestFever : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.fever_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("Do you currently have an acute illness with fever?")
     }
 
@@ -293,6 +359,11 @@ val RequestFever : State = state(parent = General) {
 
 val RequestRecentVaccination : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.recent_vaccination_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("Have your received any other vaccine in the past 7 days?")
     }
 
@@ -313,6 +384,11 @@ val RequestRecentVaccination : State = state(parent = General) {
 
 val RequestAge : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.age_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("How old are you?")
     }
 
@@ -329,6 +405,11 @@ val RequestAge : State = state(parent = General) {
 
 val RequestParentConsent : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.parent_consent_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("Do you have the consent of your parents or a legal guardian?")
     }
 
@@ -349,6 +430,11 @@ val RequestParentConsent : State = state(parent = General) {
 
 val RequestCountDose : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.count_dose_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("How many doses of vaccines against Covid 19 have you ever received till now?")
     }
 
@@ -372,6 +458,11 @@ val RequestCountDose : State = state(parent = General) {
 
 val RequestLastDoseDate : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.last_dose_date_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         val date = furhat.askFor<furhatos.nlu.common.Date>("When was your last dose? Please tell me the exact date.") {
             onResponse<DontKnow> {
                 furhat.say("That is important, you should really know that!")
@@ -407,6 +498,11 @@ val RequestLastDoseDate : State = state(parent = General) {
 
 val RequestLastDoseType : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.last_dose_type_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("What type of vaccine did you get last time?")
     }
 
@@ -419,6 +515,11 @@ val RequestLastDoseType : State = state(parent = General) {
 
 val RequestLastDoseReaction : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.last_dose_reaction_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("Did you develop an allergic reaction thereafter? Have you had any other unusual reactions after vaccination?")
     }
 
@@ -439,6 +540,11 @@ val RequestLastDoseReaction : State = state(parent = General) {
 
 val RequestInfection : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.infection_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("Has it been reliably proven that you were infected with the Covid-19 in the past?")
     }
 
@@ -457,6 +563,11 @@ val RequestInfection : State = state(parent = General) {
 
 val RequestRecovery : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.recovery_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("Did you recover from that?")
     }
 
@@ -477,6 +588,11 @@ val RequestRecovery : State = state(parent = General) {
 
 val RequestSixMonthsAfterRecovery : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.six_months_after_recovery_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("Have you waited at least 6 months since recovery?")
     }
 
@@ -501,6 +617,11 @@ val RequestSixMonthsAfterRecovery : State = state(parent = General) {
 
 val RequestImmunodeficiency : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.immunodeficiency_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("Do you have chronic diseases or do you suffer from immunodeficiency (e.g., due to chemotherapy, immunosuppressive therapy or other medications)?")
     }
 
@@ -523,6 +644,11 @@ val RequestImmunodeficiency : State = state(parent = General) {
 
 val RequestAllergy : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.allergy_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("Do you have any allergies that at some point have caused such severe reactions that you needed hospital care?")
     }
 
@@ -561,6 +687,11 @@ val RequestAllergy : State = state(parent = General) {
 
 val RequestSevereReaction : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.severe_reaction_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("Have you ever had a severe reaction to previous vaccinations that needed hospital care?")
     }
 
@@ -599,6 +730,11 @@ val RequestSevereReaction : State = state(parent = General) {
 
 val RequestBleeding : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.bleeding_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("Do you have an increased bleeding tendency due to disease or medicine?")
     }
 
@@ -637,6 +773,11 @@ val RequestBleeding : State = state(parent = General) {
 
 val RequestPregnant : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.pregnant_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("Are you pregnant?")
     }
 
@@ -667,6 +808,11 @@ val RequestPregnant : State = state(parent = General) {
 
 val RequestCountPregnancy : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.count_pregnancy_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("For how many months have you been pregnant?")
     }
 
@@ -679,6 +825,11 @@ val RequestCountPregnancy : State = state(parent = General) {
 
 val RequestKnownDisease : State = state(parent = General) {
     onEntry() {
+        if (!reentryFromFAQorModification) {
+        users.current.reentryCount.known_disease_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         furhat.ask("Do you have any known diseases or risk factors like obesity, high blood pressure or diabetes?")
     }
 
@@ -919,13 +1070,110 @@ val RequestChangeAllergy : State = state(parent = General) {
 
 val RequestName : State = state(parent = General) {
     onEntry() {
-//        users.current.reentryCount.name_reentry_count.value = users.current.reentryCount.name_reentry_count.value?.plus(1)
+        if (!reentryFromFAQorModification) {
+        users.current.reentryCount.name_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
 //        print(users.current.reentryCount.name_reentry_count)
         furhat.ask("What is your full name?")
+    }
+    onResponse<RequestSideEffects> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_side_effects_count += 1
+        raise(TellSideEffects())
+    }
+
+    onResponse<RequestCOVIDSymptoms> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_covid_symptoms_count += 1
+        raise(TellCOVIDSymptoms())
+    }
+
+    onResponse<RequestBooster> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_booster_count += 1
+        raise(TellBooster())
+    }
+
+    onResponse<RequestBreastFeeding> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_breast_feeding_count += 1
+        raise(TellBreastFeeding())
+    }
+
+    onResponse<RequestPregnancy> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_pregnancy_count += 1
+        raise(TellPregnancy())
+    }
+
+    onResponse<RequestVaccineProtection> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_vaccine_protection_count += 1
+        raise(TellVaccineProtection())
+    }
+
+    onResponse<RequestVaccine> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_vaccine_count += 1
+
+        raise(TellVaccine())
+    }
+
+    onResponse<RequestVaccineSafety> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_vaccine_safety_count += 1
+
+        raise(TellVaccineSafety())
+    }
+
+    onResponse<RequestNationality> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_nationality_count += 1
+
+        raise(TellNationality())
+    }
+
+    onResponse<RequestVaccinationFee> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_vaccination_fee_count += 1
+
+        raise(TellVaccinationFee())
+    }
+
+    onResponse<RequestAfterVaccinationRegulation> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_after_vaccination_regulation_count += 1
+
+        raise(TellAfterVaccinationRegulation())
+    }
+
+    onResponse<RequestVaccinationCertificate> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_vaccination_certificate_count += 1
+
+        raise(TellVaccinationCertificate())
+    }
+
+    onResponse<RequestVaccineType> {
+        reentryFromFAQorModification = true
+        users.current.userFAQIntentCount.request_vaccine_type_count += 1
+
+        raise(TellVaccineType())
     }
 
     onResponse {
         var name_response = it.text
+        if (!name_response.contains("I'm") &&
+                !name_response.contains("my name is") &&
+                !name_response.contains("My name is") &&
+                !name_response.contains("the name is") &&
+                !name_response.contains("The name is") &&
+                !name_response.contains("is my name") &&
+                name_response.split(" ").size != 2) {
+            reentry()
+        }
         name_response = name_response.replace("I'm ", "")
         name_response = name_response.replace("my name is ", "")
         name_response = name_response.replace("My name is ", "")
@@ -978,6 +1226,11 @@ val RequestName : State = state(parent = General) {
 val RequestConsent : State = state(parent = General) {
     onEntry() {
         // rule-based vaccine recommendation
+        if (!reentryFromFAQorModification) {
+            users.current.reentryCount.consent_reentry_count += 1
+        } else {
+            reentryFromFAQorModification = false
+        }
         var typeVaccine = Vaccine()
         val info = users.current.info
         when {
@@ -1004,6 +1257,9 @@ val RequestConsent : State = state(parent = General) {
         furhat.gesture(Gestures.ExpressSad(duration = 1.0))
         users.current.info.consent = false
         sendToElasticsearch(users.current.info)
+        sendReentryLogToElasticsearch(users.current.reentryCount)
+        sendCorrectionIntentToElasticsearch(users.current.userCorrectionIntentCount)
+        sendFAQIntentToElasticsearch(users.current.userFAQIntentCount)
         random(
                 { furhat.say("I'm sorry to hear that. Vaccination protects both you and the ones you love. I respect your choice and hope to see you again.") }
         )
