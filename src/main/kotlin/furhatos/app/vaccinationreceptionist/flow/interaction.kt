@@ -2,6 +2,7 @@ package furhatos.app.vaccinationreceptionist.flow
 
 import furhatos.app.vaccinationreceptionist.info
 import furhatos.app.vaccinationreceptionist.nlu.*
+import furhatos.app.vaccinationreceptionist.reentryCount
 import furhatos.nlu.common.*
 import furhatos.flow.kotlin.*
 import furhatos.gestures.Gestures
@@ -151,7 +152,7 @@ val General: State = state(Interaction) {
 
     onResponse<TellNotPregnant> {
         furhat.gesture(Gestures.Oh)
-        furhat.say("You are not pregnant.")
+        furhat.say("I see. You are not pregnant.")
         users.current.info.pregnant = false
         users.current.info.count_pregnancy.value = -1
         users.current.info.known_disease = null
@@ -160,7 +161,7 @@ val General: State = state(Interaction) {
 
     onResponse<TellIsPregnant> {
         furhat.gesture(Gestures.Oh)
-        furhat.say("You are pregnant.")
+        furhat.say("I see. You are pregnant.")
         users.current.info.pregnant = true
         users.current.info.count_pregnancy.value = -1
         users.current.info.known_disease = null
@@ -169,7 +170,7 @@ val General: State = state(Interaction) {
 
     onResponse<TellNotAnyDose> {
         furhat.gesture(Gestures.Oh)
-        furhat.say("You haven't received any vaccine against Covid 19.")
+        furhat.say("OK, you haven't received any vaccine against Covid 19.")
         users.current.info.count_dose.value = 0
         users.current.info.last_dose_date = null
         users.current.info.last_dose_type = null
@@ -194,7 +195,7 @@ val General: State = state(Interaction) {
 
     onResponse<TellIsInfected> {
         furhat.gesture(Gestures.Oh)
-        furhat.say("You are currently infected with Covid 19.")
+        furhat.say("I see, you are currently infected with Covid 19.")
         users.current.info.infection = true
         users.current.info.recovery = false
         users.current.info.six_months_after_recovery = null
@@ -203,7 +204,7 @@ val General: State = state(Interaction) {
 
     onResponse<TellWasInfected> {
         furhat.gesture(Gestures.Oh)
-        furhat.say("You have Covid 19 infection history.")
+        furhat.say("I see, you have Covid 19 infection history.")
         users.current.info.infection = true
         users.current.info.recovery = null
         users.current.info.six_months_after_recovery = null
@@ -918,6 +919,8 @@ val RequestChangeAllergy : State = state(parent = General) {
 
 val RequestName : State = state(parent = General) {
     onEntry() {
+//        users.current.reentryCount.name_reentry_count.value = users.current.reentryCount.name_reentry_count.value?.plus(1)
+//        print(users.current.reentryCount.name_reentry_count)
         furhat.ask("What is your full name?")
     }
 
