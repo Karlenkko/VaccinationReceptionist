@@ -139,7 +139,7 @@ val General: State = state(Interaction) {
 
     // change age
     onResponse<TellAge> {
-        furhat.gesture(Gestures.Oh)
+        furhat.gesture(Gestures.Oh, async = true)
         furhat.say("You are ${it.intent.age} years old.")
         users.current.info.age = it.intent.age
         users.current.info.parent_consent = null
@@ -151,7 +151,7 @@ val General: State = state(Interaction) {
     }
 
     onResponse<TellNotPregnant> {
-        furhat.gesture(Gestures.Oh)
+        furhat.gesture(Gestures.Oh, async = true)
         furhat.say("I see. You are not pregnant.")
         users.current.info.pregnant = false
         users.current.info.count_pregnancy.value = -1
@@ -160,7 +160,7 @@ val General: State = state(Interaction) {
     }
 
     onResponse<TellIsPregnant> {
-        furhat.gesture(Gestures.Oh)
+        furhat.gesture(Gestures.Oh, async = true)
         furhat.say("I see. You are pregnant.")
         users.current.info.pregnant = true
         users.current.info.count_pregnancy.value = -1
@@ -169,7 +169,7 @@ val General: State = state(Interaction) {
     }
 
     onResponse<TellNotAnyDose> {
-        furhat.gesture(Gestures.Oh)
+        furhat.gesture(Gestures.Oh, async = true)
         furhat.say("OK, you haven't received any vaccine against Covid 19.")
         users.current.info.count_dose.value = 0
         users.current.info.last_dose_date = null
@@ -194,7 +194,7 @@ val General: State = state(Interaction) {
     }
 
     onResponse<TellIsInfected> {
-        furhat.gesture(Gestures.Oh)
+        furhat.gesture(Gestures.Oh, async = true)
         furhat.say("I see, you are currently infected with Covid 19.")
         users.current.info.infection = true
         users.current.info.recovery = false
@@ -203,7 +203,7 @@ val General: State = state(Interaction) {
     }
 
     onResponse<TellWasInfected> {
-        furhat.gesture(Gestures.Oh)
+        furhat.gesture(Gestures.Oh, async = true)
         furhat.say("I see, you have Covid 19 infection history.")
         users.current.info.infection = true
         users.current.info.recovery = null
@@ -228,7 +228,7 @@ val End : State = state(parent = General) {
 val RefuseExplain : State = state(parent = General) {
     onEntry() {
         furhat.ledStrip.solid(java.awt.Color.RED)
-        furhat.gesture(Gestures.ExpressSad(duration = 1.0))
+        furhat.gesture(Gestures.ExpressSad(duration = 2.0), async = true)
         val info = users.current.info
         when {
             info.fever == true -> furhat.say("Due to regulations, you need to recover from the fever.")
@@ -251,7 +251,7 @@ val RefuseExplain : State = state(parent = General) {
 val CallMedicalStaff : State = state(parent = General) {
     onEntry() {
         furhat.ledStrip.solid(java.awt.Color.YELLOW)
-        furhat.gesture(Gestures.Thoughtful(duration = 1.0))
+        furhat.gesture(Gestures.Thoughtful(duration = 2.0), async = true)
         furhat.say("Sorry, I can't handle your situation.")
         furhat.say("Don't worry, our medical staff is waiting for you on the right hand side. Please consult the staff for further steps. Bye")
         sendToElasticsearch(users.current.info)
@@ -729,7 +729,7 @@ val RequestChangeAge : State = state(parent = General) {
     }
 
     onResponse<No> {
-        furhat.gesture(Gestures.Nod(strength=0.6))
+        furhat.gesture(Gestures.Nod(strength=0.6), async = true)
         users.current.info.age.value = -1
         users.current.info.parent_consent = null
         furhat.say("It's noted. We will come back to these questions later.")
@@ -756,7 +756,7 @@ val RequestChangeDoseHistory : State = state(parent = General) {
     }
 
     onResponse<No> {
-        furhat.gesture(Gestures.Nod(strength=0.6))
+        furhat.gesture(Gestures.Nod(strength=0.6), async = true)
         users.current.info.recent_vaccination = null
         users.current.info.count_dose.value = -1
         users.current.info.last_dose_date = null
@@ -785,7 +785,7 @@ val RequestChangeInfectionHistory : State = state(parent = General) {
     }
 
     onResponse<No> {
-        furhat.gesture(Gestures.Nod(strength=0.6))
+        furhat.gesture(Gestures.Nod(strength=0.6), async = true)
         users.current.info.infection = null
         users.current.info.recovery = null
         users.current.info.six_months_after_recovery = null
@@ -812,7 +812,7 @@ val RequestChangePregnancy : State = state(parent = General) {
     }
 
     onResponse<No> {
-        furhat.gesture(Gestures.Nod(strength=0.6))
+        furhat.gesture(Gestures.Nod(strength=0.6), async = true)
         users.current.info.pregnant = null
         users.current.info.count_pregnancy.value = -1
         users.current.info.known_disease = null
@@ -845,7 +845,7 @@ val RequestChangePhysicalConditions : State = state(parent = General) {
     }
 
     onResponse<No> {
-        furhat.gesture(Gestures.Nod(strength=0.6))
+        furhat.gesture(Gestures.Nod(strength=0.6), async = true)
         users.current.info.immunodeficiency = null
         users.current.info.bleeding = null
         users.current.info.fever = null
@@ -868,7 +868,7 @@ val RequestChangeAllergy : State = state(parent = General) {
     }
 
     onResponse<No> {
-        furhat.gesture(Gestures.Nod(strength=0.6))
+        furhat.gesture(Gestures.Nod(strength=0.6), async = true)
         users.current.info.allergy = null
         users.current.info.severe_reaction = null
         furhat.say("It's noted. We will come back to these questions later.")
@@ -990,7 +990,7 @@ val RequestConsent : State = state(parent = General) {
     }
 
     onResponse<Yes> {
-        furhat.gesture(Gestures.Smile(duration = 1.0))
+        furhat.gesture(Gestures.Smile(duration = 2.0), async = true)
         furhat.ledStrip.solid(java.awt.Color.GREEN)
         random(
                 { furhat.say("I'm glad to hear that.") }
@@ -1001,7 +1001,7 @@ val RequestConsent : State = state(parent = General) {
 
     onResponse<No> {
         furhat.ledStrip.solid(java.awt.Color.RED)
-        furhat.gesture(Gestures.ExpressSad(duration = 1.0))
+        furhat.gesture(Gestures.ExpressSad(duration = 2.0), async = true)
         users.current.info.consent = false
         sendToElasticsearch(users.current.info)
         random(
