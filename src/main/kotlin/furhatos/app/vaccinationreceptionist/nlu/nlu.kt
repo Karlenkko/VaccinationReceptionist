@@ -163,6 +163,23 @@ class TellNumberDose: Intent() {
     }
 }
 
+class TellNumberDoseFormally: Intent() {
+    var dose: Number = Number(-1)
+
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("I have received @dose doses.",
+                "I have received @dose injections.",
+                "I have received @dose vaccinations.",
+                "I have taken @dose injections.",
+                "I have taken @dose vaccinations.",
+                "I have taken @dose doses.",
+                "I had @dose injections.",
+                "I had @dose vaccinations.",
+                "I had @dose doses."
+                )
+    }
+}
+
 class TellNotAnyDose: Intent() {
     override fun getExamples(lang: Language): List<String> {
         return listOf("I have never received any dose.",
@@ -171,5 +188,20 @@ class TellNotAnyDose: Intent() {
                     "I never received any vaccination.",
                     "I haven't received any dose.",
                     "I haven't received any vaccination")
+    }
+}
+
+class TellNotPregnant: Intent() {
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("I'm not pregnant."
+                )
+    }
+}
+
+class TellIsPregnant: Intent() {
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("I'm pregnant.",
+                      "I have been pregnant since months ago"
+        )
     }
 }

@@ -136,17 +136,59 @@ val General: State = state(Interaction) {
     }
 
     // change age
-    // Other error handling can be achieved in a similar way(if you agree with this idea)
     onResponse<TellAge> {
         furhat.say("Okay, you are ${it.intent.age} years old.")
         users.current.info.age = it.intent.age
         users.current.info.parent_consent = null
         if (users.current.info.age.value!! < 12) {
             goto(RefuseExplain)
+        } else if (users.current.info.age.value!! >= 18) {
+            reentry()
         } else {
             goto(CheckEligibility)
         }
     }
+
+    onResponse<TellNotPregnant> {
+        furhat.say("Okay, you are not pregnant.")
+        users.current.info.pregnant = false
+        users.current.info.count_pregnancy.value = -1
+        users.current.info.known_disease = null
+        reentry()
+    }
+
+    onResponse<TellIsPregnant> {
+        furhat.say("Okay, you are pregnant.")
+        users.current.info.pregnant = true
+        users.current.info.count_pregnancy.value = -1
+        users.current.info.known_disease = null
+        goto(CheckEligibility)
+    }
+
+    onResponse<TellNotAnyDose> {
+        furhat.say("Okay, you haven't received any vaccine against Covid 19.")
+        users.current.info.count_dose.value = 0
+        users.current.info.last_dose_date = null
+        users.current.info.last_dose_type = null
+        users.current.info.last_dose_reaction = null
+        reentry()
+    }
+
+    onResponse<TellNumberDoseFormally> {
+        users.current.info.last_dose_date = null
+        users.current.info.last_dose_type = null
+        users.current.info.last_dose_reaction = null
+        users.current.info.count_dose = it.intent.dose
+        furhat.say("I see, you have received ${it.intent.dose} doses.")
+        if (users.current.info.count_dose.value!! > 2 || (users.current.info.count_dose.value!! == 2 && users.current.info.age.value!! < 18 )) {
+            goto(RefuseExplain)
+        } else if (users.current.info.count_dose.value == 0) {
+            reentry()
+        } else {
+            goto(CheckEligibility)
+        }
+    }
+
 }
 
 // All slot-filling states
@@ -283,7 +325,7 @@ val RequestParentConsent : State = state(parent = General) {
 
 val RequestCountDose : State = state(parent = General) {
     onEntry() {
-        furhat.ask("How many doses have you ever received till now?")
+        furhat.ask("How many doses of vaccines against Covid 19 have you ever received till now?")
     }
 
     // go straight to RefuseExplain when not eligible
@@ -306,7 +348,7 @@ val RequestCountDose : State = state(parent = General) {
 
 val RequestLastDoseDate : State = state(parent = General) {
     onEntry() {
-        var date = furhat.askFor<furhatos.nlu.common.Date>("When was your last dose? Please tell me the exact date.") {
+        val date = furhat.askFor<furhatos.nlu.common.Date>("When was your last dose? Please tell me the exact date.") {
             onResponse<DontKnow> {
                 furhat.say("That is important, you should really know that!")
                 reentry()
@@ -573,12 +615,12 @@ val RequestPregnant : State = state(parent = General) {
     onEntry() {
         furhat.ask("Are you pregnant?")
     }
-    
-    onResponse<Yes> {
+
+    onResponse<TellNotPregnant> {
         random(
-                { furhat.say("Okay, you are pregnant.") }
+                { furhat.say("Okay, you are not pregnant.") }
         )
-        users.current.info.pregnant = true
+        users.current.info.pregnant = false
         goto(CheckEligibility)
     }
 
@@ -587,6 +629,14 @@ val RequestPregnant : State = state(parent = General) {
                 { furhat.say("Okay, you are not pregnant.") }
         )
         users.current.info.pregnant = false
+        goto(CheckEligibility)
+    }
+
+    onResponse<Yes> {
+        random(
+                { furhat.say("Okay, you are pregnant.") }
+        )
+        users.current.info.pregnant = true
         goto(CheckEligibility)
     }
 }
@@ -632,8 +682,168 @@ val RequestConfirmMedicalInfo : State = state(parent = General) {
         goto(CheckEligibility)
     }
 
-    //TODO
-    // onResponse<No>
+    onResponse<No> {
+        furhat.say("Don't worry. Let me ask you something.")
+        goto(RequestChangeAge)
+    }
+}
+
+val RequestChangeAge : State = state(parent = General) {
+    onEntry() {
+        furhat.say("Your age is ${users.current.info.age.value}.")
+        if (users.current.info.parent_consent == true) {
+            furhat.say("And you have the consent of your parents or a legal guardian.")
+        }
+        random(
+                { furhat.ask("It is correct?") },
+                { furhat.ask("Am I correct?") }
+        )
+    }
+
+    onResponse<Yes> {
+        goto(RequestChangeDoseHistory)
+    }
+
+    onResponse<No> {
+        users.current.info.age.value = -1
+        users.current.info.parent_consent = null
+        furhat.say("It's noted. We will come back to these questions later.")
+        goto(RequestChangeDoseHistory)
+    }
+}
+
+val RequestChangeDoseHistory : State = state(parent = General) {
+    onEntry() {
+        furhat.say("You haven't received any kind of vaccine in the past 7 days.")
+        furhat.say("You have already received ${users.current.info.count_dose.value} dose against Covid 19.")
+        if (users.current.info.last_dose_date != null) {
+            furhat.say("Your most recent dose was on ${users.current.info.last_dose_date}.")
+            furhat.say("You had ${users.current.info.last_dose_type} last time and nothing unusual happened thereafter.")
+        }
+        random(
+                { furhat.ask("It is correct?") },
+                { furhat.ask("Am I correct?") }
+        )
+    }
+
+    onResponse<Yes> {
+        goto(RequestChangeInfectionHistory)
+    }
+
+    onResponse<No> {
+        users.current.info.recent_vaccination = null
+        users.current.info.count_dose.value = -1
+        users.current.info.last_dose_date = null
+        users.current.info.last_dose_type = null
+        users.current.info.last_dose_reaction = null
+        furhat.say("It's noted. We will come back to these questions later.")
+        goto(RequestChangeInfectionHistory)
+    }
+}
+
+val RequestChangeInfectionHistory : State = state(parent = General) {
+    onEntry() {
+        if (users.current.info.infection == true) {
+            furhat.say("You were infected with the Covid 19 in the past. And you have recovered from that since at least 6 months.")
+        }else{
+            furhat.say("You don't have Covid 19 infection history.")
+        }
+        random(
+                { furhat.ask("It is correct?") },
+                { furhat.ask("Am I correct?") }
+        )
+    }
+
+    onResponse<Yes> {
+        goto(RequestChangePregnancy)
+    }
+
+    onResponse<No> {
+        users.current.info.infection = null
+        users.current.info.recovery = null
+        users.current.info.six_months_after_recovery = null
+        furhat.say("It's noted. We will come back to these questions later.")
+        goto(RequestChangePregnancy)
+    }
+}
+
+val RequestChangePregnancy : State = state(parent = General) {
+    onEntry() {
+        if (users.current.info.pregnant == true) {
+            furhat.say("You are currently pregnant for ${users.current.info.count_pregnancy.value} months.")
+        }else{
+            furhat.say("You are not pregnant.")
+        }
+        random(
+                { furhat.ask("It is correct?") },
+                { furhat.ask("Am I correct?") }
+        )
+    }
+
+    onResponse<Yes> {
+        goto(RequestChangePhysicalConditions)
+    }
+
+    onResponse<No> {
+        users.current.info.pregnant = null
+        users.current.info.count_pregnancy.value = -1
+        users.current.info.known_disease = null
+        furhat.say("It's noted. We will come back to these questions later.")
+        goto(RequestChangePhysicalConditions)
+    }
+}
+
+val RequestChangePhysicalConditions : State = state(parent = General) {
+    onEntry() {
+        furhat.say("You don't have fever now.")
+        if (users.current.info.immunodeficiency == true) {
+            furhat.say("But you have some problems with your immune system.")
+        }else{
+            furhat.say("And there's no problem with your immune system.")
+        }
+        if (users.current.info.bleeding == true) {
+            furhat.say("You have an increased bleeding tendency due to disease or medicine.")
+        }else{
+            furhat.say("You don't have an increased bleeding tendency.")
+        }
+        random(
+                { furhat.ask("It is correct?") },
+                { furhat.ask("Am I correct?") }
+        )
+    }
+
+    onResponse<Yes> {
+        goto(RequestChangeAllergy)
+    }
+
+    onResponse<No> {
+        users.current.info.immunodeficiency = null
+        users.current.info.bleeding = null
+        users.current.info.fever = null
+        furhat.say("It's noted. We will come back to these questions later.")
+        goto(RequestChangeAllergy)
+    }
+}
+
+val RequestChangeAllergy : State = state(parent = General) {
+    onEntry() {
+        furhat.say("You have never ever experienced any severe allergic reactions to any food or vaccines.")
+        random(
+                { furhat.ask("It is correct?") },
+                { furhat.ask("Am I correct?") }
+        )
+    }
+
+    onResponse<Yes> {
+        goto(CheckEligibility)
+    }
+
+    onResponse<No> {
+        users.current.info.allergy = null
+        users.current.info.severe_reaction = null
+        furhat.say("It's noted. We will come back to these questions later.")
+        goto(CheckEligibility)
+    }
 }
 
 //val RequestPersonalNum : State = state(parent = General) {
@@ -693,7 +903,7 @@ val RequestName : State = state(parent = General) {
 
         name_response = name_response.replace(".", "")
         name_response = name_response.trim()
-        var names = name_response.split(" ")
+        val names = name_response.split(" ")
         if (names.size < 2) {
             reentry()
         }
