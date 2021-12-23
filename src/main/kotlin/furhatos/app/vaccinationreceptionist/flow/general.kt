@@ -6,6 +6,7 @@ import furhatos.util.*
 val Idle: State = state {
 
     init {
+        furhat.ledStrip.solid(java.awt.Color.BLACK)
         furhat.setVoice(Language.ENGLISH_US, Gender.MALE)
         if (users.count > 0) {
             furhat.attend(users.random)

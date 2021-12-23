@@ -205,3 +205,24 @@ class TellIsPregnant: Intent() {
         )
     }
 }
+
+class TellIsInfected: Intent() {
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("I'm infected with Covid.",
+                "I'm infected with Covid 19.",
+                "I'm infected with coronavirus."
+        )
+    }
+}
+
+class TellWasInfected: Intent() {
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("I was infected with Covid.",
+                "I have been infected with Covid.",
+                "I was infected with Covid 19.",
+                "I have been infected with Covid 19.",
+                "I was infected with coronavirus.",
+                "I have been infected with coronavirus."
+        )
+    }
+}

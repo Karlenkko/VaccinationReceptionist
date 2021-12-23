@@ -4,13 +4,14 @@ import furhatos.app.vaccinationreceptionist.info
 import furhatos.app.vaccinationreceptionist.nlu.*
 import furhatos.nlu.common.*
 import furhatos.flow.kotlin.*
+import furhatos.gestures.Gestures
 import furhatos.nlu.common.Number
 import java.util.*
 
 //　greeting + introduction + ask to start slot filling
 val Start: State = state(Interaction) {
-
     onEntry {
+        furhat.ledStrip.solid(java.awt.Color.WHITE)
         furhat.ask("Hi there. Welcome to the drop-in center for vaccination. I'm a self-service robot to help you go through some procedures of verification to see if you are in a good condition to receive a dose. If you have any questions, you can interrupt and ask me after we start the procedure. So, do you intend to receive a vaccination?")
     }
 
@@ -137,20 +138,20 @@ val General: State = state(Interaction) {
 
     // change age
     onResponse<TellAge> {
-        furhat.say("Okay, you are ${it.intent.age} years old.")
+        furhat.gesture(Gestures.Oh)
+        furhat.say("You are ${it.intent.age} years old.")
         users.current.info.age = it.intent.age
         users.current.info.parent_consent = null
         if (users.current.info.age.value!! < 12) {
             goto(RefuseExplain)
-        } else if (users.current.info.age.value!! >= 18) {
-            reentry()
         } else {
             goto(CheckEligibility)
         }
     }
 
     onResponse<TellNotPregnant> {
-        furhat.say("Okay, you are not pregnant.")
+        furhat.gesture(Gestures.Oh)
+        furhat.say("You are not pregnant.")
         users.current.info.pregnant = false
         users.current.info.count_pregnancy.value = -1
         users.current.info.known_disease = null
@@ -158,7 +159,8 @@ val General: State = state(Interaction) {
     }
 
     onResponse<TellIsPregnant> {
-        furhat.say("Okay, you are pregnant.")
+        furhat.gesture(Gestures.Oh)
+        furhat.say("You are pregnant.")
         users.current.info.pregnant = true
         users.current.info.count_pregnancy.value = -1
         users.current.info.known_disease = null
@@ -166,7 +168,8 @@ val General: State = state(Interaction) {
     }
 
     onResponse<TellNotAnyDose> {
-        furhat.say("Okay, you haven't received any vaccine against Covid 19.")
+        furhat.gesture(Gestures.Oh)
+        furhat.say("You haven't received any vaccine against Covid 19.")
         users.current.info.count_dose.value = 0
         users.current.info.last_dose_date = null
         users.current.info.last_dose_type = null
@@ -189,6 +192,23 @@ val General: State = state(Interaction) {
         }
     }
 
+    onResponse<TellIsInfected> {
+        furhat.gesture(Gestures.Oh)
+        furhat.say("You are currently infected with Covid 19.")
+        users.current.info.infection = true
+        users.current.info.recovery = false
+        users.current.info.six_months_after_recovery = null
+        goto(RefuseExplain)
+    }
+
+    onResponse<TellWasInfected> {
+        furhat.gesture(Gestures.Oh)
+        furhat.say("You have Covid 19 infection history.")
+        users.current.info.infection = true
+        users.current.info.recovery = null
+        users.current.info.six_months_after_recovery = null
+        goto(CheckEligibility)
+    }
 }
 
 // All slot-filling states
@@ -196,20 +216,19 @@ val General: State = state(Interaction) {
 // if succeeds, store info in the backend and thank the person
 val End : State = state(parent = General) {
     onEntry() {
-        sendToElasticsearch(users.current.info)
         random(
                 { furhat.say("Please go to the waiting room. You will get vaccinated very soon! Have a nice day!") }
         )
-        // TODO
-        // store info in the backend or log system
+        sendToElasticsearch(users.current.info)
         goto(Idle)
     }
 }
 
 val RefuseExplain : State = state(parent = General) {
     onEntry() {
+        furhat.ledStrip.solid(java.awt.Color.RED)
+        furhat.gesture(Gestures.ExpressSad(duration = 1.0))
         val info = users.current.info
-        sendToElasticsearch(users.current.info)
         when {
             info.fever == true -> furhat.say("Due to regulations, you need to recover from the fever.")
             info.recent_vaccination == true -> furhat.say("You need to wait for at least a week after your first dose, or 6 month after the second.")
@@ -223,14 +242,18 @@ val RefuseExplain : State = state(parent = General) {
             info.known_disease == false -> furhat.say("Pregnant women under 35 years of age and without risk factors are recommended to be vaccinated after week 12")
         }
         furhat.say("If you have further questions, please consult your doctor. Take care of yourself, and be well. Bye.")
+        sendToElasticsearch(users.current.info)
         goto(Idle)
     }
 }
 
 val CallMedicalStaff : State = state(parent = General) {
     onEntry() {
+        furhat.ledStrip.solid(java.awt.Color.YELLOW)
+        furhat.gesture(Gestures.Thoughtful(duration = 1.0))
+        furhat.say("Sorry, I can't handle your situation.")
+        furhat.say("Don't worry, our medical staff is waiting for you on the right hand side. Please consult the staff for further steps. Bye")
         sendToElasticsearch(users.current.info)
-        furhat.say("Our medical staff is waiting for you on the right hand side. Please consult the staff for further steps. Bye")
         goto(Idle)
     }
 }
@@ -705,6 +728,7 @@ val RequestChangeAge : State = state(parent = General) {
     }
 
     onResponse<No> {
+        furhat.gesture(Gestures.Nod(strength=0.6))
         users.current.info.age.value = -1
         users.current.info.parent_consent = null
         furhat.say("It's noted. We will come back to these questions later.")
@@ -731,6 +755,7 @@ val RequestChangeDoseHistory : State = state(parent = General) {
     }
 
     onResponse<No> {
+        furhat.gesture(Gestures.Nod(strength=0.6))
         users.current.info.recent_vaccination = null
         users.current.info.count_dose.value = -1
         users.current.info.last_dose_date = null
@@ -759,6 +784,7 @@ val RequestChangeInfectionHistory : State = state(parent = General) {
     }
 
     onResponse<No> {
+        furhat.gesture(Gestures.Nod(strength=0.6))
         users.current.info.infection = null
         users.current.info.recovery = null
         users.current.info.six_months_after_recovery = null
@@ -785,6 +811,7 @@ val RequestChangePregnancy : State = state(parent = General) {
     }
 
     onResponse<No> {
+        furhat.gesture(Gestures.Nod(strength=0.6))
         users.current.info.pregnant = null
         users.current.info.count_pregnancy.value = -1
         users.current.info.known_disease = null
@@ -817,6 +844,7 @@ val RequestChangePhysicalConditions : State = state(parent = General) {
     }
 
     onResponse<No> {
+        furhat.gesture(Gestures.Nod(strength=0.6))
         users.current.info.immunodeficiency = null
         users.current.info.bleeding = null
         users.current.info.fever = null
@@ -839,6 +867,7 @@ val RequestChangeAllergy : State = state(parent = General) {
     }
 
     onResponse<No> {
+        furhat.gesture(Gestures.Nod(strength=0.6))
         users.current.info.allergy = null
         users.current.info.severe_reaction = null
         furhat.say("It's noted. We will come back to these questions later.")
@@ -958,6 +987,8 @@ val RequestConsent : State = state(parent = General) {
     }
 
     onResponse<Yes> {
+        furhat.gesture(Gestures.Smile(duration = 1.0))
+        furhat.ledStrip.solid(java.awt.Color.GREEN)
         random(
                 { furhat.say("I'm glad to hear that.") }
         )
@@ -966,6 +997,8 @@ val RequestConsent : State = state(parent = General) {
     }
 
     onResponse<No> {
+        furhat.ledStrip.solid(java.awt.Color.RED)
+        furhat.gesture(Gestures.ExpressSad(duration = 1.0))
         users.current.info.consent = false
         sendToElasticsearch(users.current.info)
         random(
