@@ -225,10 +225,15 @@ val General: State = state(Interaction) {
     onResponse<TellNumberDoseFormally> {
         reentryFromFAQorModification = true
         users.current.userCorrectionIntentCount.tell_number_dose_count += 1
-        users.current.info.last_dose_date = null
-        users.current.info.last_dose_type = null
-        users.current.info.last_dose_reaction = null
-        users.current.info.count_dose = it.intent.dose
+        if (it.intent.dose.value!! > 5) {
+            furhat.say("It's impossible that you have received ${it.intent.dose} doses.")
+            reentry()
+        } else {
+            users.current.info.last_dose_date = null
+            users.current.info.last_dose_type = null
+            users.current.info.last_dose_reaction = null
+            users.current.info.count_dose = it.intent.dose
+        }
         furhat.say("I see, you have received ${it.intent.dose} doses.")
         if (users.current.info.count_dose.value!! > 2 || (users.current.info.count_dose.value!! == 2 && users.current.info.age.value!! < 18 )) {
             goto(RefuseExplain)
@@ -440,7 +445,12 @@ val RequestCountDose : State = state(parent = General) {
 
     // go straight to RefuseExplain when not eligible
     onResponse<TellNumberDose> {
-        users.current.info.count_dose = it.intent.dose
+        if (it.intent.dose.value!! > 5) {
+            furhat.say("It's impossible that you have received ${it.intent.dose} doses.")
+            reentry()
+        } else {
+            users.current.info.count_dose = it.intent.dose
+        }
         furhat.say("I see, you have received ${it.intent.dose} doses.")
         if (users.current.info.count_dose.value!! > 2 || (users.current.info.count_dose.value!! == 2 && users.current.info.age.value!! < 18 )) {
             goto(RefuseExplain)
@@ -559,6 +569,11 @@ val RequestInfection : State = state(parent = General) {
         users.current.info.infection = false
         goto(CheckEligibility)
     }
+
+    onResponse<DontKnow> {
+        furhat.say("In this case, please look for our medical staff.")
+        goto(CallMedicalStaff)
+    }
 }
 
 val RequestRecovery : State = state(parent = General) {
@@ -583,6 +598,11 @@ val RequestRecovery : State = state(parent = General) {
         furhat.say("Now you feel good.")
         users.current.info.recovery = true
         goto(CheckEligibility)
+    }
+
+    onResponse<DontKnow> {
+        furhat.say("In this case, please look for our medical staff.")
+        goto(CallMedicalStaff)
     }
 }
 
@@ -609,6 +629,7 @@ val RequestSixMonthsAfterRecovery : State = state(parent = General) {
         users.current.info.six_months_after_recovery = true
         goto(CheckEligibility)
     }
+
     onResponse<DontKnow> {
         furhat.say("In this case, please look for our medical staff.")
         goto(CallMedicalStaff)
@@ -831,6 +852,19 @@ val RequestKnownDisease : State = state(parent = General) {
             reentryFromFAQorModification = false
         }
         furhat.ask("Do you have any known diseases or risk factors like obesity, high blood pressure or diabetes?")
+    }
+
+    onResponse<TellHaveProblem> {
+        users.current.info.known_disease = true
+        goto(CallMedicalStaff)
+    }
+
+    onResponse<TellNoProblem> {
+        random(
+                { furhat.say("Okay, no known diseases.") }
+        )
+        users.current.info.known_disease = false
+        goto(RefuseExplain)
     }
 
     onResponse<Yes> {

@@ -78,7 +78,8 @@ class TellNoProblem: Intent() {
         return listOf("I haven't @disease",
                 "I don't have @disease",
                 "I didn't have @disease",
-                "I haven't had @disease")
+                "I haven't had @disease",
+                "I have not")
     }
 }
 
