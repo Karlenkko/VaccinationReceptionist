@@ -140,7 +140,7 @@ class TellAge : Intent() {
     var age: Number = Number(-1)
 
     override fun getExamples(lang: Language): List<String> {
-        return listOf("I'm @age years old.", "I'm @age", "@age")
+        return listOf("I'm @age years old.", "I'm @age", "@age", "My age is @age")
     }
 }
 
@@ -148,7 +148,21 @@ class TellAgeFormally : Intent() {
     var age: Number = Number(-1)
 
     override fun getExamples(lang: Language): List<String> {
-        return listOf("I'm @age years old.", "I'm @age")
+        return listOf("I'm @age years old.", "I'm @age", "My age is @age")
+    }
+}
+class TellNotAnyDose: Intent() {
+    override fun getExamples(lang: Language): List<String> {
+        return listOf("I have never received any dose.",
+                "I never received any dose.",
+                "I didn't receive any dose.",
+                "I have never received any vaccination.",
+                "I never received any vaccination.",
+                "I haven't received any dose.",
+                "I haven't received any vaccination",
+                "I have received zero dose.",
+                "I received zero vaccination."
+        )
     }
 }
 
@@ -189,17 +203,6 @@ class TellNumberDoseFormally: Intent() {
     }
 }
 
-class TellNotAnyDose: Intent() {
-    override fun getExamples(lang: Language): List<String> {
-        return listOf("I have never received any dose.",
-                    "I never received any dose.",
-                    "I have never received any vaccination.",
-                    "I never received any vaccination.",
-                    "I haven't received any dose.",
-                    "I haven't received any vaccination")
-    }
-}
-
 class TellNotPregnant: Intent() {
     override fun getExamples(lang: Language): List<String> {
         return listOf("I'm not pregnant."
@@ -218,6 +221,7 @@ class TellIsPregnant: Intent() {
 class TellIsInfected: Intent() {
     override fun getExamples(lang: Language): List<String> {
         return listOf("I'm infected with Covid.",
+                "I'm infected now with Covid.",
                 "I'm infected with Covid 19.",
                 "I'm infected with coronavirus."
         )

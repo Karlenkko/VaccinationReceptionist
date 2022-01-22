@@ -12,10 +12,14 @@ import furhatos.nlu.common.Number
 import java.util.*
 
 var reentryFromFAQorModification: Boolean = false
+
+var lighting: Boolean = true
 //　greeting + introduction + ask to start slot filling
 val Start: State = state(Interaction) {
     onEntry {
-        furhat.ledStrip.solid(java.awt.Color.WHITE)
+        if (lighting) {
+            furhat.ledStrip.solid(java.awt.Color.WHITE)
+        }
         furhat.ask("Hi there. Welcome to the drop-in center for vaccination. I'm a self-service robot to help you go through some procedures of verification to see if you are in a good condition to receive a dose. If you have any questions, you can interrupt and ask me after we start the procedure. So, do you intend to receive a vaccination?")
     }
 
@@ -285,7 +289,9 @@ val End : State = state(parent = General) {
 
 val RefuseExplain : State = state(parent = General) {
     onEntry() {
-        furhat.ledStrip.solid(java.awt.Color.RED)
+        if (lighting) {
+            furhat.ledStrip.solid(java.awt.Color.RED)
+        }
         furhat.gesture(Gestures.ExpressSad(duration = 2.0), async = true)
         val info = users.current.info
         when {
@@ -312,7 +318,9 @@ val RefuseExplain : State = state(parent = General) {
 
 val CallMedicalStaff : State = state(parent = General) {
     onEntry() {
-        furhat.ledStrip.solid(java.awt.Color.YELLOW)
+        if (lighting) {
+            furhat.ledStrip.solid(java.awt.Color.YELLOW)
+        }
         furhat.gesture(Gestures.Thoughtful(duration = 2.0), async = true)
         furhat.say("Sorry, I can't handle your situation.")
         furhat.say("Don't worry, our medical staff is waiting for you on the right hand side. Please consult the staff for further steps. Bye")
@@ -442,6 +450,11 @@ val RequestCountDose : State = state(parent = General) {
         }
         furhat.ask("How many doses of vaccines against Covid 19 have you ever received till now?")
     }
+    onResponse<TellNotAnyDose> {
+        users.current.info.count_dose = Number(0)
+        furhat.say("I see, you have not yet received any dose.")
+        goto(CheckEligibility)
+    }
 
     // go straight to RefuseExplain when not eligible
     onResponse<TellNumberDose> {
@@ -459,11 +472,6 @@ val RequestCountDose : State = state(parent = General) {
         }
     }
 
-    onResponse<TellNotAnyDose> {
-        users.current.info.count_dose = Number(0)
-        furhat.say("I see, you have not yet received any dose.")
-        goto(CheckEligibility)
-    }
 }
 
 val RequestLastDoseDate : State = state(parent = General) {
@@ -1278,7 +1286,9 @@ val RequestConsent : State = state(parent = General) {
 
     onResponse<Yes> {
         furhat.gesture(Gestures.Smile(duration = 2.0), async = true)
-        furhat.ledStrip.solid(java.awt.Color.GREEN)
+        if (lighting) {
+            furhat.ledStrip.solid(java.awt.Color.GREEN)
+        }
         random(
                 { furhat.say("I'm glad to hear that.") }
         )
@@ -1287,7 +1297,9 @@ val RequestConsent : State = state(parent = General) {
     }
 
     onResponse<No> {
-        furhat.ledStrip.solid(java.awt.Color.RED)
+        if (lighting) {
+            furhat.ledStrip.solid(java.awt.Color.RED)
+        }
         furhat.gesture(Gestures.ExpressSad(duration = 2.0), async = true)
         users.current.info.consent = false
         sendToElasticsearch(users.current.info)

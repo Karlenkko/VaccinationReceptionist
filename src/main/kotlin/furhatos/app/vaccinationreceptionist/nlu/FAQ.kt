@@ -11,7 +11,10 @@ class RequestSideEffects: Intent() {
                 "What are the side effects of the vaccination?",
                 "What is the symptom after the vaccination?",
                 "How I might feel after the vaccination?",
-                "How will I feel after the vaccination?"
+                "How will I feel after the vaccination?",
+                "Can you tell me the side effects of the vaccination?",
+                "Could you please tell me the side effects of the vaccination?",
+                "Could you please tell me how I might feel after the vaccination?"
         )
     }
 }
@@ -21,8 +24,15 @@ class RequestCOVIDSymptoms: Intent() {
         return listOf(
                 "What are frequent symptoms?",
                 "What are possible symptoms?",
+                "What are the possible symptoms?",
                 "What are symptoms of Covid 19?",
-                "What are symptoms if I'm infected?"
+                "What are symptoms of Covid?",
+                "What are the symptoms of Covid 19?",
+                "What are symptoms if I'm infected?",
+                "Can you tell me the symptoms of Covid 19?",
+                "Could you please tell me the symptoms of Covid 19?",
+                "Do you know the symptoms of Covid?",
+                "Do you know the possible symptoms of Covid?"
         )
     }
 }
@@ -33,7 +43,8 @@ class RequestBooster: Intent() {
                 "Why do I need the booster dose?",
                 "Why is there a need for a booster dose?",
                 "Why do I need the third dose?",
-                "Why do I need the third vaccination?"
+                "Why do I need the third vaccination?",
+                "Could you please tell me why do I need a third dose?"
         )
     }
 }
@@ -43,7 +54,8 @@ class RequestBreastFeeding(): Intent() {
         return listOf(
                 "Are the vaccines safe for breastfeeding women?",
                 "Is the vaccine safe for breastfeeding women?",
-                "Is the vaccine safe for breastfeeding?"
+                "Is the vaccine safe for breastfeeding?",
+                "Could you please tell me if the vaccine is safe for breastfeeding?"
         )
     }
 }
@@ -54,7 +66,9 @@ class RequestPregnancy: Intent() {
                 "Are the vaccines safe for pregnant women?",
                 "Is the vaccine safe for pregnant women?",
                 "Can pregnant woman get vaccinated?",
-                "Can pregnant woman receive vaccination?"
+                "Can pregnant woman receive vaccination?",
+                "Could you please tell me if the vaccine is safe for pregnant woman?",
+                "Could you please tell me if pregnant woman can get vaccinated?"
         )
     }
 }
@@ -64,7 +78,8 @@ class RequestVaccineProtection: Intent() {
         return listOf(
                 "Can the vaccines protect me against all variants?",
                 "Can the vaccines protect me against Omicron variant?",
-                "Can the vaccines protect me against Delta variant?"
+                "Can the vaccines protect me against Delta variant?",
+                "Could you please tell me if the vaccine can protect me against Covid variants?"
         )
     }
 }
@@ -87,7 +102,9 @@ class RequestVaccineSafety: Intent() {
                 "Are the approved vaccines safe?",
                 "Are the vaccines safe?",
                 "Are the vaccines safe for injection?",
-                "Is the vaccine safe?"
+                "Is the vaccine safe?",
+                "Could you please tell me if the vaccine is safe?",
+                "Can you tell me if the vaccine is safe?"
         )
     }
 }
@@ -111,7 +128,9 @@ class RequestVaccinationFee: Intent() {
                 "Is the vaccination free?",
                 "Is the vaccine free?",
                 "How much should I pay?",
-                "How much is the vaccine?"
+                "How much is the vaccine?",
+                "Could you please tell me if the vaccine is free?",
+                "Can you tell me if the vaccination is free?"
         )
     }
 }
@@ -121,7 +140,8 @@ class RequestAfterVaccinationRegulation: Intent() {
         return listOf(
                 "Do I have to continue following the general guidelines after the vaccination?",
                 "Do I have to follow the general guidelines after the vaccination?",
-                "Do I need to follow the general rules after the vaccination?"
+                "Do I need to follow the general rules after the vaccination?",
+                "Can you tell me if I still need to follow the general rules after the vaccination?"
         )
     }
 }
@@ -130,6 +150,7 @@ class RequestVaccinationCertificate: Intent() {
     override fun getExamples(lang: Language): List<String> {
         return listOf(
                 "How do I get a vaccination certificate?",
+                "How can I get a vaccination certificate?",
                 "How do I get a vaccination pass?",
                 "When will I get a vaccination pass?"
         )
